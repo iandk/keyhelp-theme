@@ -1,0 +1,1069 @@
+{% extends 'base/intern.twig' %}
+
+
+{% block page_scripts %}
+    {% if _configure == 'php_interpreter' %}
+        <script id="app-interpreter-template" type="text/x-handlebars-template">
+            {% verbatim %}
+                <tr>
+                    <td>
+                        {{# if is_scheduled }}
+                            {% endverbatim %}{% include 'includes/icon.twig' with { '_type': 'status_processing' } %}{% verbatim %}
+                        {{ else }}
+                            <span class="icon is-medium has-text-grey-lighter">
+                                <i class="fas fa-minus"></i>
+                            </span>
+                        {{/ if }}
+                    </td>
+                    <td class="has-no-wrap">
+                        <strong>{{ main_version }}</strong>
+                        <span class="has-text-grey-light"> / {{ php_version }}</span>
+                    </td>
+                    <td>
+                    </td>
+                    <td>
+                        {{# if is_eol }}
+                            {% endverbatim %}{{ macros.tag(outdated, 'is-danger') }}{% verbatim %}
+                        {{/ if }}
+                    </td>
+                    <td>
+                        <input type="checkbox" name="install[]" value="{{ main_version }}" {{# if is_scheduled }}checked{{/ if }}>
+                    </td>
+                </tr>
+            {% endverbatim %}
+        </script>
+    {% endif %}
+
+    <script src="/theme/bulma/assets/js/page_configuration.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+{% block content %}
+
+    {% include 'includes/card_start.twig' %}
+
+    <form action="?page={{ _app.page }}&configure={{ _configure }}" method="post" autocomplete="off">
+        <input type="hidden" name="submit" value="1">
+
+        {% if _configure == 'hostname' %}
+            {{ forms.input_wrapped({
+                'label': hostname,
+                'help': hostname_help,
+                'name': 'hostname',
+                'value': _new_hostname ? _new_hostname : _hostname,
+                'is_required': true,
+            }) }}
+        {% endif %}
+
+
+        {% if _configure == 'php_interpreter' %}
+            {{ forms.label_wrapped({
+                'label': os_default_version,
+                'value': _os_default_version
+            }) }}
+
+            {{ forms.label_wrapped({
+                'label': installed_interpreters,
+                'help': installed_interpreters_help
+            }) }}
+
+            {% if _interpreters is empty %}
+                <div class="has-text-centered has-text-grey has-margin-bottom-large">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+                <div class="table-container">
+                    <table class="table is-fullwidth is-hoverable is-striped">
+                        <thead>
+                            <tr>
+                                <th class="is-narrow">
+                                    S
+                                </th>
+                                <th class="is-narrow">
+                                    {{ version }}
+                                </th>
+                                <th class="is-narrow">
+                                    <!-- compile date -->
+                                </th>
+                                <th>
+                                    <!-- outdated -->
+                                </th>
+                                <th class="is-narrow">
+                                    {{ used }}
+                                </th>
+                                <th class="is-narrow">
+                                    {{ selectable }}
+                                </th>
+                                <th  class="is-narrow">
+                                    {{ auto_update }}
+                                </th>
+                                <th class="is-narrow">
+                                    {{ uninstall }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in _interpreters %}
+                            <tr>
+                                <td>
+                                    {% include 'includes/icon.twig' with { '_type': item.status } %}
+                                </td>
+                                <td class="has-no-wrap">
+                                    <strong>{{ item.main_version }}</strong>
+                                    <span class="has-text-grey-light"> / {{ item.php_version }}</span>
+                                </td>
+                                <td>
+                                    <span class="icon is-pulled-right has-text-grey app-tooltip-mandatory" data-tippy-content="<b>{{ compile_date }}:</b> {{ item.compile_date }}">
+                                        <i class="fas fa-info-circle"></i>
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if item.is_eol %}
+                                        {{ macros.tag(outdated, 'is-danger') }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ item.usage_count }}x
+                                </td>
+                                <td>
+                                    <input type="checkbox" name="selectable[]" value="{{ item.main_version }}" {{ item.is_selectable ? 'checked' }}>
+                                </td>
+                                <td>
+                                    <input type="checkbox" name="auto_update[]" value="{{ item.main_version }}" {{ item.is_auto_update ? 'checked' }}>
+                                </td>
+                                <td>
+                                    {% if not item.is_used %}
+                                        <input type="checkbox" name="uninstall[]" value="{{ item.main_version }}" {{ item.is_uninstall ? 'checked' }}>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% if item.has_errors %}
+                                <tr>
+                                    <td colspan="42">
+                                        {{ item.errors }}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="42" class="has-text-grey-light">
+                                    {{ _interpreters|length }} {{ items_total }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            {% endif %}
+
+            {{ forms.label_wrapped({
+                'label': available_interpreters,
+                'help': available_interpreters_help
+            }) }}
+
+            <input type="hidden" name="scheduled_installs" value="{{ _scheduled_installs }}">
+            <input type="hidden" name="ajax_finished" value="0">
+
+            <div id="app-interpreter-not-available" class="has-text-centered has-text-grey" style="display: none">
+                - {{ no_items_available }} -
+            </div>
+
+            <div id="app-interpreter-error" class="has-text-centered" style="display: none">
+                <span class="has-text-danger has-text-weight-bold">
+                    {{ an_error_occured }}
+                </span>
+                <br>
+                <span id="app-interpreter-error-message"></span>
+            </div>
+
+            <div class="has-text-centered has-margin-top-medium has-margin-bottom-medium">
+                {{ forms.button({
+                    'label': refresh,
+                    'style': 'primary',
+                    'icon': 'fas fa-sync-alt',
+                    'id': 'app-load-interpreters',
+                    'type': 'button'
+                }) }}
+            </div>
+
+            <div id="app-interpreter-table" class="table-container has-margin-bottom-none" style="display: none">
+                <table class="table is-fullwidth is-hoverable is-striped">
+                    <thead>
+                        <tr>
+                            <th class="is-narrow">
+                                S
+                            </th>
+                            <th class="is-narrow">
+                                {{ version }}
+                            </th>
+                            <th class="is-narrow">
+                                <!-- build date -->
+                            </th>
+                            <th>
+                                <!-- outdated -->
+                            </th>
+                            <th class="is-narrow">
+                                {{ install }}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="app-interpreter-tbody">
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="42" class="has-text-grey-light">
+                                <span id="app-interpreter-count"></span> {{ items_total }}
+                            </td>
+                        <tr>
+                    </tfoot>
+                </table>
+            </div>
+
+
+        {% endif %}
+
+
+        {% if _configure == 'ram_drive' %}
+            {{ forms.checkbox_wrapped({
+                'label': ram_drive_directories,
+                'help': ram_drive_directories_help,
+                'options': [
+                    {
+                        'label': '/tmp',
+                        'name': 'is_tmp',
+                        'value': '1',
+                        'is_checked': _is_tmp
+                    },
+                    {
+                        'label': '/var/tmp',
+                        'name': 'is_var_tmp',
+                        'value': '1',
+                        'is_checked': _is_var_tmp
+                    },
+                ]
+            }) }}
+
+            <div id="app-show-with-enabled" style="display: none">
+                {{ forms.checkbox_wrapped({
+                    'label': prevent_script_execution,
+                    'help': prevent_script_execution_help,
+                    'options': {
+                        'label': enabled,
+                        'name': 'is_noexec',
+                        'value': '1',
+                        'is_checked': _is_noexec
+                    },
+                }) }}
+
+                {{ forms.input_wrapped({
+                    'label': ram_drive_size,
+                    'name': 'size',
+                    'value': _size,
+                    'type': 'number',
+                    'min': 0,
+                    'is_required': true,
+                    'addons': {
+                        'right': {
+                            'type': 'select',
+                            'select': {
+                                'name': 'unit',
+                                'options': _units,
+                                'selected': _units_selected
+                            }
+                        }
+                    }
+                }) }}
+            </div>
+        {% endif %}
+
+
+        {% if _configure == 'webserver' %}
+            {{ forms.label_wrapped({
+                'label': web_server_ports,
+                'help': web_server_ports_help
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': http_port,
+                'help': http_port_help,
+                'name': 'http_port',
+                'type': 'number',
+                'max': 65535,
+                'value': _http_port,
+                'is_required': true,
+            }) }}
+
+           {{ forms.input_wrapped({
+                'label': https_port,
+                'help': https_port_help,
+                'name': 'https_port',
+                'type': 'number',
+                'max': 65535,
+                'value': _https_port,
+                'is_required': true,
+            }) }}
+        {% endif %}
+
+
+        {% if _configure == 'email_server' %}
+            {{ forms.input_wrapped({
+                'label': max_message_size,
+                'name': 'max_message_size',
+                'type': 'number',
+                'min': 0,
+                'value': _max_message_size,
+                'is_required': true,
+                'addons': {
+                    'left': {
+                        'type': 'select',
+                        'select': {
+                            'name': 'multiplier',
+                            'options': _multiplier_options,
+                            'selected': _multiplier_selected
+                        }
+                    }
+                }
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': max_userip_connections,
+                'help': max_userip_connections_help,
+                'name': 'max_userip_connections',
+                'type': 'number',
+                'min': 0,
+                'value': _max_userip_connections,
+                'is_required': true,
+            }) }}
+
+            {{ forms.textarea_wrapped({
+                'label': dns_blacklists,
+                'help': dns_blacklists_help,
+                'name': 'dns_blacklists',
+                'value': _dns_blacklists,
+                'rows': 3
+            }) }}
+
+            {{ forms.textarea_wrapped({
+                'label': dns_whitelists,
+                'help': dns_whitelists_help,
+                'name': 'dns_whitelists',
+                'value': _dns_whitelists,
+                'rows': 3
+            }) }}
+        {% endif %}
+
+
+        {% if _configure == 'database' %}
+            {{ forms.checkbox_wrapped({
+                'label': database_remote_access,
+                'help': database_remote_access_help,
+                'options': {
+                    'label': enabled,
+                    'name': 'is_database_remote_access',
+                    'value': '1',
+                    'is_checked': _is_database_remote_access
+                }
+            }) }}
+
+            {{ forms.checkbox_wrapped({
+                'label': database_custom_names,
+                'help': database_custom_names_help,
+                'options': {
+                    'label': enabled,
+                    'name': 'is_database_custom_names',
+                    'value': '1',
+                    'is_checked': _is_database_custom_names
+                }
+            }) }}
+        {% endif %}
+
+
+        {% if _configure == 'ftp' %}
+            {{ forms.checkbox_wrapped({
+                'label': ftp_custom_names,
+                'help': ftp_custom_names_help,
+                'options': {
+                    'label': enabled,
+                    'name': 'is_ftp_custom_names',
+                    'value': '1',
+                    'is_checked': _is_ftp_custom_names
+                }
+            }) }}
+        {% endif %}
+
+
+        {% if _configure == 'reboot' %}
+            {{ forms.checkbox_wrapped({
+                'label': perform_reboot,
+                'help': confirm_reboot,
+                'options': {
+                    'label': confirmation,
+                    'name': 'is_reboot',
+                    'value': '1'
+                }
+            }) }}
+        {% endif %}
+
+
+        {% if _configure == 'tls_certificates' %}
+            {{ forms.input_wrapped({
+                'label': notification_email,
+                'help': notification_email_help,
+                'type': 'email',
+                'name': 'notification_email',
+                'value': _notification_email,
+            }) }}
+            {{ forms.select_wrapped({
+                'label': certificate_expired,
+                'help': certificate_expired_help,
+                'name': 'notify_in_advance',
+                'options': _notify_in_advance,
+                'selected': _notify_in_advance_selected,
+            }) }}
+
+            <div class="has-margin-large">
+                <hr class="has-background-grey-light">
+            </div>
+
+            {{ forms.label_wrapped({
+                'label': lets_encrypt,
+            }) }}
+            {{ forms.select_wrapped({
+                'label': environment,
+                'help': environment_help,
+                'name': 'environment',
+                'options': _environments,
+                'selected': _environments_selected,
+            }) }}
+            {{ forms.select_wrapped({
+                'label': country,
+                'help': country_help,
+                'name': 'country',
+                'options': _countries,
+                'selected': _countries_selected,
+            }) }}
+            {{ forms.input_wrapped({
+                'label': state,
+                'help': state_help,
+                'name': 'state',
+                'value': _state,
+                'is_required': true
+            }) }}
+        {% endif %}
+
+
+        {% if _configure == 'password' %}
+            {{ forms.input_wrapped({
+                'label': password_minimum_length,
+                'name': 'password_minimum_length',
+                'value': _password_minimum_length,
+                'type': 'number',
+                'min': 1
+            }) }}
+
+            {{ forms.checkbox_wrapped({
+                'label': password_complexity,
+                'help': password_complexity_help,
+                'options': [
+                    {
+                        'label': complexity_letters,
+                        'name': 'is_letter',
+                        'value': '1',
+                        'is_checked': _is_letter
+                    },
+                    {
+                        'label': complexity_lowercase,
+                        'name': 'is_lowercase',
+                        'value': '1',
+                        'is_checked': _is_lowercase
+                    },
+                    {
+                        'label': complexity_uppercase,
+                        'name': 'is_uppercase',
+                        'value': '1',
+                        'is_checked': _is_uppercase
+                    },
+                    {
+                        'label': complexity_digits,
+                        'name': 'is_digit',
+                        'value': '1',
+                        'is_checked': _is_digit
+                    },
+                    {
+                        'label': complexity_special,
+                        'name': 'is_special',
+                        'value': '1',
+                        'is_checked': _is_special
+                    },
+                ]
+            }) }}
+
+            {{ forms.checkbox_wrapped({
+                'label': additional_password_checks,
+                'options': [
+                    {
+                        'label': complexity_non_common,
+                        'name': 'is_non_common',
+                        'value': '1',
+                        'is_checked': _is_non_common
+                    },
+                    {
+                        'label': complexity_have_i_been_pwned,
+                        'help': complexity_have_i_been_pwned_help,
+                        'name': 'is_have_i_been_pwned',
+                        'value': '1',
+                        'is_checked': _is_have_i_been_pwned
+                    },
+                ]
+            }) }}
+        {% endif %}
+
+
+        {% if _configure == 'login_sessions' %}
+            {{ forms.input_wrapped({
+                'label': max_login_attempts,
+                'help': max_login_attempts_help,
+                'name': 'max_login_attempts',
+                'value': _max_login_attempts,
+                'type': 'number',
+                'min': 0
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': login_disabled_duration,
+                'help': login_disabled_duration_help,
+                'name': 'login_disabled_duration',
+                'value': _login_disabled_duration,
+                'type': 'number',
+                'min': 0,
+                'addons': {
+                    'left': {
+                        'label': seconds
+                    }
+                }
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': session_idle_time,
+                'help': session_idle_time_help,
+                'name': 'session_idle_time',
+                'value': _session_idle_time,
+                'type': 'number',
+                'min': 60,
+                'addons': {
+                    'left': {
+                        'label': seconds
+                    }
+                }
+            }) }}
+
+            {{ forms.textarea_wrapped({
+                'label': restrict_administrative_access,
+                'help': restrict_administrative_access_help,
+                'name': 'administrative_access',
+                'value': _administrative_access,
+                'rows': 3,
+            }) }}
+
+            {{ forms.radio_wrapped({
+                'help': list_acts_as,
+                'options': [
+                    {
+                        'label': access_blacklist,
+                        'name': 'administrative_access_behavior',
+                        'value': 'blacklist',
+                        'is_checked': _administrative_access_behavior == 'blacklist',
+                    },
+                    {
+                        'label': access_whitelist,
+                        'name': 'administrative_access_behavior',
+                        'value': 'whitelist',
+                        'is_checked': _administrative_access_behavior == 'whitelist',
+                    },
+                ]
+            }) }}
+        {% endif %}
+
+
+        {% if _configure == 'file_manager' %}
+            {{ forms.checkbox_wrapped({
+                'label': file_manager_enabled,
+                'help': file_manager_help,
+                'options': {
+                    'label': yes,
+                    'name': 'is_enabled',
+                    'value': '1',
+                    'is_checked': _is_enabled
+                }
+            }) }}
+        {% endif %}
+
+
+        {% if _configure == 'av_scanner' %}
+            {{ forms.checkbox_wrapped({
+                'label': av_scanner_enabled,
+                'options': {
+                    'label': yes,
+                    'name': 'is_enabled',
+                    'value': '1',
+                    'is_checked': _is_enabled
+                }
+            }) }}
+
+            {{ forms.select_wrapped({
+                'label': infection_treatment,
+                'name': 'infection_treatment',
+                'options': _infection_treatments,
+                'selected': _infection_treatments_selected,
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': notification,
+                'help': av_notification_help,
+                'name': 'notification_email',
+                'type': 'email',
+                'value': _notification_email,
+            }) }}
+
+            {{ forms.checkbox_wrapped({
+                'help': av_notification_verbose,
+                'options': {
+                    'label': yes,
+                    'name': 'is_notification_verbose',
+                    'value': '1',
+                    'is_checked': _is_notification_verbose
+                }
+            }) }}
+
+            {{ forms.textarea_wrapped({
+                'label': scan_locations,
+                'help': scan_locations_help,
+                'name': 'scan_locations',
+                'value': _scan_locations,
+                'rows': 4,
+                'is_auto_resize': true,
+            }) }}
+        {% endif %}
+
+        {% if _configure == 'webmail' %}
+            {{ forms.checkbox_wrapped({
+                'label': webmail_is_enabled,
+                'options': {
+                    'label': yes,
+                    'name': 'is_enabled',
+                    'value': '1',
+                    'is_checked': _is_enabled
+                }
+            }) }}
+
+            {{ forms.select_wrapped({
+                'label': webmail_client,
+                'name': 'webmail_client',
+                'options': _webmail_clients,
+                'selected': _webmail_clients_selected,
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': access_url,
+                'help': access_url_webmail_help,
+                'name': 'access_url',
+                'type': 'url',
+                'value': _access_url,
+                'is_required': true,
+            }) }}
+
+            {{ forms.radio_wrapped({
+                'label': webmail_subdomain_behavior,
+                'help': webmail_subdomain_behavior_help,
+                'options': [
+                    {
+                        'label': behavior_redirect,
+                        'help': behavior_redirect_help,
+                        'name': 'webmail_subdomain',
+                        'value': 'redirect',
+                        'is_checked': _webmail_subdomain == 'redirect'
+                    },
+                    {
+                        'label': behavior_stay,
+                        'help': behavior_stay_help,
+                        'name': 'webmail_subdomain',
+                        'value': 'stay',
+                        'is_checked': _webmail_subdomain == 'stay'
+                    },
+                    {
+                        'label': behavior_stay_insecure,
+                        'help': behavior_stay_insecure_help,
+                        'name': 'webmail_subdomain',
+                        'value': 'stay_insecure',
+                        'is_checked': _webmail_subdomain == 'stay_insecure'
+                    },
+                ]
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': product_name,
+                'name': 'product_name',
+                'value': _product_name,
+            }) }}
+
+            <div class="app-show-with-roundcube" style="display:none">
+                {{ forms.input_wrapped({
+                    'label': support_url,
+                    'name': 'support_url',
+                    'value': _support_url,
+                }) }}
+
+                {{ forms.input_wrapped({
+                    'label': plugins,
+                    'help': plugins_help,
+                    'name': 'plugins',
+                    'value': _plugins,
+                }) }}
+            </div>
+        {% endif %}
+
+
+        {% if _configure == 'phpmyadmin' %}
+            {{ forms.checkbox_wrapped({
+                'label': phpmyadmin_is_enabled,
+                'options': {
+                    'label': yes,
+                    'name': 'is_enabled',
+                    'value': '1',
+                    'is_checked': _is_enabled
+                }
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': access_url,
+                'help': access_url_phpmyadmin_help,
+                'name': 'access_url',
+                'value': _access_url,
+                'type': 'url',
+                'is_required': true,
+            }) }}
+        {% endif %}
+
+
+        {% if _configure == 'backup' %}
+
+            {{ forms.checkbox_wrapped({
+                'label': enable_local_repo,
+                'help': enable_local_repo_help,
+                'options': {
+                    'label': enabled,
+                    'name': 'is_local_repo_enabled',
+                    'value': '1',
+                    'is_checked': _is_local_repo_enabled
+                }
+            }) }}
+
+            <div class="app-show-with-local-repo" style="display: none">
+                {{ forms.input_wrapped({
+                    'label': max_files_local_repo,
+                    'help': max_files_local_repo_help,
+                    'name': 'max_files_local_repo',
+                    'type': 'number',
+                    'min': 0,
+                    'value': _max_files_local_repo,
+                }) }}
+            </div>
+
+            {{ forms.select_wrapped({
+                'label': compression_rate,
+                'help': compression_rate_help,
+                'name': 'compression_rate',
+                'options': _compression_rates,
+                'selected': _compression_rates_selected,
+            }) }}
+
+            {{ forms.checkbox_wrapped({
+                'label': multithreading,
+                'help': multithreading_help,
+                'options': {
+                    'label': enabled,
+                    'name': 'is_multithreading',
+                    'value': '1',
+                    'is_checked': _is_multithreading
+                }
+            }) }}
+        {% endif %}
+
+
+        {% if _configure == 'awstats' %}
+            {{ forms.checkbox_wrapped({
+                'label': awstats,
+                'help': awstats_help,
+                'options': {
+                    'label': enabled,
+                    'name': 'is_awstats_enabled',
+                    'value': '1',
+                    'is_checked': _is_awstats_enabled
+                }
+            }) }}
+        {% endif %}
+
+
+        {% if _configure == 'system_domain_scheme' %}
+            {{ forms.input_wrapped({
+                'label': system_domain_scheme,
+                'help': system_domain_scheme_help,
+                'name': 'system_domain_scheme',
+                'value': _system_domain_scheme,
+                'is_required': true,
+            }) }}
+        {% endif %}
+
+
+        {% if _configure == 'theme' %}
+            {{ forms.label_wrapped({
+                'label': theme,
+                'help': theme_help,
+            }) }}
+
+            {% for item in _themes %}
+                {{ forms.radio_wrapped({
+                    'options': [
+                        {
+                            'label': '<b>' ~ item.name ~ '</b>',
+                            'name': 'theme',
+                            'value': item.id,
+                            'is_checked': item.id == _current_theme,
+                        },
+                    ]
+                }) }}
+                <div class="columns">
+                    <div class="column has-text-centered">
+                        {% if item.screenshot %}
+                            <img class="image has-frame" src="{{ item.screenshot }}">
+                        {% else %}
+                            <div>
+                            <i class="far fa-image fa-4x has-text-grey-lighter"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="column">
+                        {% if item.description %}
+                            <div class="has-margin-bottom-small">
+                                <p class="has-text-weight-bold">{{ description }}</p>
+                                <p class="has-margin-left-medium">{{ item.description }}<p>
+                            </div>
+                        {% endif %}
+                        {% if item.version %}
+                            <div class="has-margin-bottom-small">
+                                <p class="has-text-weight-bold">{{ version }}</p>
+                                <p class="has-margin-left-medium">{{ item.version }}</p>
+                            </div>
+                        {% endif %}
+                        {% if item.author %}
+                            <div class="has-margin-bottom-small">
+                                <p class="has-text-weight-bold">{{ author }}</p>
+                                <p class="has-margin-left-medium">{{ item.author }}<p>
+                            </div>
+                        {% endif %}
+                        {% if item.website %}
+                            <div class="has-margin-bottom-small">
+                                <p class="has-text-weight-bold">{{ website }}</p>
+                                <p class="has-margin-left-medium"><a href="{{ item.website }}" target="_blank" rel="nofollow noopener noreferrer">{{ item.website }}</a></p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if not loop.last %}
+                    <div class="has-margin-large">
+                        <hr class="has-background-grey-lighter">
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            <div class="has-margin-xsmall">&nbsp;</div>
+        {% endif %}
+
+
+        {% if _configure == 'languages' %}
+            <div class="table-container">
+                <table class="table is-fullwidth is-hoverable is-striped">
+                    <thead>
+                        <tr>
+                            <th colspan="2">
+                                {{ language }}
+                            </th>
+                            <th>
+                                {{ enabled }}
+                            </th>
+                            <th>
+                                {{ default }}
+                            </th>
+                            <th>
+                                {{ used }}
+                            </th>
+                            <th>
+                                {{ translator }}
+                            </th>
+                    </thead>
+                    <tbody>
+                        {% for item in _all_languages %}
+                            <tr>
+                                <td class="has-no-wrap">
+                                    {{ item.label }}
+                                </td>
+                                <td class="is-narrow">
+                                    <div class="app-tooltip-mandatory" data-tippy-content="{{ translation_coverage|format(item.translated_share) }}">
+                                        <span class="tag {{ item.translated_share > 90 ? 'is-success' : (item.translated_share > 70 ? 'is-warning' : 'is-danger') }}">
+                                            {{ item.translated_share }} %
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if item.code != 'en' %}
+                                        <input type="checkbox" name="enabled[]" value="{{ item.code }}" {{ item.is_enabled ? 'checked' }}>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <input type="radio" name="default" value="{{ item.code }}" {{ item.is_default ? 'checked' }}>
+                                </td>
+                                <td>
+                                    {{ item.used }}
+                                </td>
+                                <td>
+                                    {% if item.is_official %}
+                                        <span class="has-text-grey-light">
+                                            {{ official_translation }}
+                                        </span>
+                                    {% elseif item.translator %}
+                                        <a href="{{ item.translator.url }}" rel="nofollow noopener noreferrer" target="_blank">
+                                            {{ item.translator.name }}
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {{ forms.label_wrapped({
+                'help': language_help,
+            }) }}
+        {% endif %}
+
+
+        {% if _configure == 'support_access' %}
+            {{ forms.checkbox_wrapped({
+                'label': support_access,
+                'help': support_access_help,
+                'options': {
+                    'label': enabled,
+                    'name': 'is_support_access_enabled',
+                    'value': '1',
+                    'is_checked': _is_support_access_enabled
+                }
+            }) }}
+        {% endif %}
+
+
+        {% if _configure == 'data_privacy' %}
+            {{ forms.checkbox_wrapped({
+                'label': ip_anonymization,
+                'help': ip_anonymization_help,
+                'options': [
+                    {
+                        'label': instant_anonymization,
+                        'help': instant_anonymization_help,
+                        'name': 'is_instant_anonymization',
+                        'value': '1',
+                        'is_checked': _is_instant_anonymization
+                    },
+                    {
+                        'label': anonymize_after_rotation,
+                        'help': anonymize_after_rotation_help,
+                        'name': 'is_anonymize_after_rotation',
+                        'value': '1',
+                        'is_checked': _is_anonymize_after_rotation
+                    }
+                ]
+            }) }}
+        {% endif %}
+
+
+        {% if _configure == 'notifications' %}
+            {{ forms.input_wrapped({
+                'label': notification_sender_email,
+                'help': notification_sender_email_help,
+                'name': 'notification_sender_email',
+                'value': _notification_sender_email,
+                'type': 'email',
+                'is_required': true,
+            }) }}
+
+            <div class="has-margin-large">
+                <hr class="has-background-grey-light">
+            </div>
+
+            {{ forms.input_wrapped({
+                'label': traffic_notification,
+                'help': traffic_notification_help,
+                'name': 'traffic_notification_email',
+                'value': _traffic_notification_email,
+                'type': 'email',
+            }) }}
+
+            <div class="has-margin-large">
+                <hr class="has-background-grey-light">
+            </div>
+
+            {{ forms.checkbox_wrapped({
+                'label': send_email_account_created,
+                'help': send_email_account_created_help,
+                'options': {
+                    'label': enabled,
+                    'name': 'is_send_email_account_created',
+                    'value': '1',
+                    'is_checked': _is_send_email_account_created
+                }
+            }) }}
+
+            <div class="has-margin-large">
+                <hr class="has-background-grey-light">
+            </div>
+
+            {{ forms.input_wrapped({
+                'label': common_mail_service_forwarding,
+                'help': common_mail_service_forwarding_help,
+                'name': 'common_mail_service_forwarding',
+                'value': _common_mail_service_forwarding,
+                'type': 'email',
+            }) }}
+        {% endif %}
+
+        {% if _configure == 'subdomain_catch_all' %}
+            {{ forms.checkbox_wrapped({
+                'label': enable_subdomain_catch_all,
+                'help': enable_subdomain_catch_all_help,
+                'options': {
+                    'label': enabled,
+                    'name': 'is_subdomain_catch_all_enabled',
+                    'value': '1',
+                    'is_checked': _is_subdomain_catch_all_enabled
+                }
+            }) }}
+            {{ forms.checkbox_wrapped({
+                'label': redirect_to_main_domain,
+                'help': redirect_to_main_domain_help,
+                'options': {
+                    'label': yes,
+                    'name': 'is_redirect_to_main_domain',
+                    'value': '1',
+                    'is_checked': _is_redirect_to_main_domain
+                }
+            }) }}
+        {% endif %}
+
+        {% include 'includes/cta.twig' with { '_back': { 'target': _app.page }, '_confirm': true } %}
+    </form>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}

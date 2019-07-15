@@ -1,0 +1,21 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    {% include 'includes/delete_page.twig' with {
+        '_action': '?page=admin_template_email_delete',
+        '_back_page': 'admin_template_email_index',
+        '_config': {
+            'language': {
+                'label': language
+            },
+            'event': {
+                'label': event
+            },
+        },
+        '_items': _email_templates
+    } %}
+
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    {% include 'includes/card_start.twig' %}
+
+        <form action="?page={{ _app.page }}&action={{ _action }}" method="post" autocomplete="off">
+            <input type="hidden" name="submit" value="1">
+            <input type="hidden" name="id" value="{{ _id }}">
+
+            {{ forms.input_wrapped({
+                'label': username,
+                'name': 'username',
+                'type': 'text',
+                'is_required': true,
+                'value': _username,
+            }) }}
+
+            {% include 'includes/form_password.twig' with { '_leave_empty': _action == 'edit' } %}
+
+            {{ forms.input_wrapped({
+                'label': email,
+                'name': 'email',
+                'type': 'email',
+                'is_required': true,
+                'value': _email,
+            }) }}
+
+            {{ forms.select_wrapped({
+                'label': language,
+                'name': 'language',
+                'options': _languages,
+                'selected': _languages_selected,
+            }) }}
+
+            {{ forms.checkbox_wrapped({
+                'label': main_administrator,
+                'help': main_administrator_help,
+                'options': {
+                    'label': yes,
+                    'name': 'is_main_admin',
+                    'value': '1',
+                    'is_checked': _is_main_admin
+                }
+            }) }}
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': 'admin_accounts_admin' }, '_confirm': true } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}

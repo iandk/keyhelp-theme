@@ -1,0 +1,75 @@
+{% if not _status %}
+    <div class="card">
+        <div class="card-content">
+            <div class="has-text-centered has-text-grey">
+                - {{ no_items_available }} -
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="content">
+        <h2 class="title is-5">{{ _status.headline }}</h2>
+
+        <p>
+            {% for item in _status.server_general %}
+                {{ item }}<br>
+            {% endfor %}
+        </p>
+
+        <p>
+            {% for item in _status.server_status %}
+                {{ item }}<br>
+            {% endfor %}
+        </p>
+
+        <p>
+            {{ _status.scoreboard_help }}
+        </p>
+
+        <pre class="has-margin-bottom-large">{{ _status.scoreboard }}</pre>
+
+        <div class="card">
+            <div class="card-content">
+                <div class="table-container">
+                    <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells is-narrow">
+                        <thead>
+                            <tr>
+                                {% for item in _status.table.headlines %}
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': item.label } %}>
+                                        {{ item.label }}
+                                    </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in _status.table.rows %}
+                                <tr>
+                                    {% for item in row %}
+                                        <td class="has-no-wrap">{{ item }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-container">
+                    <table class="table is-narrow">
+                        <tbody>
+                            {% for key, item in _status.table_help %}
+                                <tr>
+                                    <th>{{ key }}</th>
+                                    <td>{{ item }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <p class="has-margin-top-large">
+            <strong>{{ _status.table_ssl.headline }}</strong><br>
+            {{ _status.table_ssl.body }}
+        </p>
+    </div>
+{% endif %}

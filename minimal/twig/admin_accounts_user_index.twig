@@ -1,0 +1,242 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script src="/theme/bulma/assets/js/page_accounts_index.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    <div class="tabs is-centered">
+        <ul>
+            <li>
+                <a href="?page=admin_accounts_admin" data-is-link="true">{{ administrator_accounts }}</a>
+            </li>
+            <li class="is-active">
+                <a href="?page=admin_accounts_user" data-is-link="true">{{ user_accounts }}</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- button line -->
+    {% include 'includes/index_page_button_line.twig' with ({
+        '_add_btn_label': add_user,
+        '_add_btn_url': '?page=admin_accounts_user&action=add',
+        '_form_id': 'form-user-account-index'
+    }) %}
+
+    <!-- view options -->
+    <form action="?page=admin_accounts_user" method="post">
+        <input type="hidden" name="update_view" value="1">
+
+        <div class="card has-margin-bottom-medium">
+            <div class="card-content">
+                <div class="level">
+                    <div class="level-left">
+                        <div class="level-item">
+                            <strong>{{ view_options }}</strong>
+                        </div>
+                    </div>
+                    <div class="level-right">
+                        <div class="level-item">
+                            {{ forms.input({
+                                'name': 'search',
+                                'value': _search,
+                                'addons': {
+                                    'left': {
+                                        'type': 'select',
+                                        'select': {
+                                            'name': 'search_option',
+                                            'options': _search_options,
+                                            'selected': _search_options_selected,
+                                        }
+                                    }
+                                }
+                            }) }}
+                        </div>
+                        <div class="level-item">
+                            {{ forms.button({
+                                'label': view,
+                                'style': 'grey',
+                                'icon': 'fas fa-search'
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- item table -->
+    {% if _user_accounts is empty %}
+        <div class="card">
+            <div class="card-content">
+
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+
+            </div>
+        </div>
+    {% else %}
+        <div class="card">
+            <div class="card-content">
+
+                <form id="form-user-account-index" action="?page=admin_accounts_user&action=delete" method="post">
+                    <div class="table-container">
+                        <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                            <thead>
+                                <tr>
+                                    <th class="is-narrow" {% include 'includes/table_sorting.twig' with { '_column': 'status' } %}>
+                                        S
+                                    </th>
+                                    <th colspan="5" {% include 'includes/table_sorting.twig' with { '_column': 'username' } %}>
+                                        {{ username }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'contact_name' } %}>
+                                        {{ contact_name }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'disk_space_sort' } %}>
+                                        {{ disk_space }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'traffic_sort' } %}>
+                                        {{ traffic }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'last_login' } %}>
+                                        {{ last_login }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        {{ options }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        <input class="app-check-all" type="checkbox">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in _user_accounts %}
+                                    <tr>
+                                        <td>
+                                            {% include 'includes/icon.twig' with { '_type': item.status } %}
+                                        </td>
+                                        <td class="is-narrow">
+                                            <a href="?page=admin_accounts_user&id={{ item.id }}&action=user_login" target="_blank" rel="nofollow noopener noreferrer">
+                                                {{ item.username }}
+                                            </a>
+                                        </td>
+                                        <td class="is-narrow">
+                                            {% if item.delete_on %}
+                                                <div class="app-tooltip-mandatory" data-tippy-content="<b>{{ will_be_deleted_on }}</b> {{ item.delete_on }}">
+                                                    <span class="icon has-text-grey">
+                                                        <i class="fas fa-trash"></i>
+                                                    </span>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                        <td class="is-narrow">
+                                            {% if item.is_suspended %}
+                                                <div class="app-tooltip-mandatory" data-tippy-content="{{ suspended }}">
+                                                    <span class="icon has-text-danger">
+                                                        <i class="fas fa-lock"></i>
+                                                    </span>
+                                                </div>
+                                            {% elseif item.suspend_on %}
+                                                <div class="app-tooltip-mandatory" data-tippy-content="<b>{{ will_be_suspended_on }}</b> {{ item.suspend_on }}">
+                                                    <span class="icon has-text-grey">
+                                                        <i class="fas fa-lock"></i>
+                                                    </span>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                        <td class="is-narrow">
+                                            {% if item.notes %}
+                                                <div class="app-tooltip-mandatory" data-tippy-content="{{ item.notes|e }}">
+                                                    <span class="icon has-text-grey">
+                                                        <i class="fas fa-comment-alt"></i>
+                                                    </span>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                        <td class="is-narrow">
+                                            <div class="app-tooltip-user-info" data-user-id="{{ item.id }}">
+                                                <span class="icon has-text-grey">
+                                                    <i class="fas fa-info-circle"></i>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {{ item.contact_name }}
+                                        </td>
+                                        <td class="has-no-wrap">
+                                            {{ macros.usage_indicator({
+                                                'current': item.disk_space_current,
+                                                'max': item.disk_space_max,
+                                                'percent': item.disk_space_percent,
+                                            }) }}
+                                        </td>
+                                        <td class="has-no-wrap">
+                                            {{ macros.usage_indicator({
+                                                'current': item.traffic_current,
+                                                'max': item.traffic_max,
+                                                'percent': item.traffic_percent,
+                                            }) }}
+                                        </td>
+                                        <td class="is-narrow">
+                                            {{ item.last_login }}
+                                        </td>
+                                        <td class="is-narrow">
+                                            {% if item.is_deleted %}
+                                                {{ no_action_available }}
+                                            {% else %}
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'edit',
+                                                    '_url': '?page=admin_accounts_user&action=edit&id=' ~ item.id
+                                                } %}
+
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'login',
+                                                    '_url': '?page=admin_accounts_user&action=user_login&id=' ~ item.id
+                                                } %}
+
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'delete',
+                                                    '_url': '?page=admin_accounts_user&action=delete&id=' ~ item.id
+                                                } %}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if not item.is_deleted %}
+                                                {{ item.checkbox }}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            <tfoot>
+                                <tr>
+                                    <td colspan="7" class="has-text-grey-light">
+                                        {{ _user_accounts|length }} {{ items_total }}
+                                    </td>
+                                    <td class="has-text-grey-light has-text-right">
+                                        {{ _total.disk_space.consumed }} / {{ _total.disk_space.allocated }}
+                                        {{ _total.disk_space.is_unlimited ? '+ ' ~ unlimited }}
+                                    </td>
+                                    <td class="has-text-grey-light has-text-right">
+                                        {{ _total.traffic.consumed }} / {{ _total.traffic.allocated }}
+                                        {{ _total.traffic.is_unlimited ? '+ ' ~ unlimited }}
+                                    </td>
+                                    <td colspan="42">
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    {% endif %}
+
+{% endblock %}

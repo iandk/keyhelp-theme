@@ -1,0 +1,33 @@
+<div class="level">
+    <div class="level-left">
+        <div class="level-item is-block">
+            {% set is_array = _usage|keys|first is sameas(0) %}
+
+            {% if is_array %}
+                {% for item in _usage %}
+                    {{ macros.usage_indicator(item) }}
+                {% endfor %}
+            {% else %}
+                {% if _usage %}
+                    {{ macros.usage_indicator(_usage) }}
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    <div class="level-right">
+        <div class="level-item">
+            {{ forms.button({
+                'label': _add_btn_label,
+                'style': 'primary',
+                'url': _add_btn_url
+            }) }}
+        </div>
+        <div class="level-item">
+            {{ forms.button({
+                'label': delete_selected,
+                'style': 'secondary',
+                'submit_form': _form_id
+            }) }}
+        </div>
+    </div>
+</div>

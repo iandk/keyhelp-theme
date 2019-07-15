@@ -1,0 +1,154 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-large">
+        {{ help }}
+    </p>
+
+    <!-- button line -->
+    {% include 'includes/index_page_button_line.twig' with ({
+        '_usage': _usage|merge({'label': scheduled_tasks}),
+        '_add_btn_label': add_task,
+        '_add_btn_url': '?page=user_scheduled_tasks&action=add',
+        '_form_id': 'form-scheduled-tasks-index'
+    }) %}
+
+    <!-- item table -->
+    <div class="card">
+        <div class="card-content">
+
+            {% if _scheduled_tasks_items is empty %}
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+
+                <form id="form-scheduled-tasks-index" action="?page=user_scheduled_tasks&action=delete" method="post">
+                    <div class="table-container">
+                        <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                            <thead>
+                                <tr>
+                                    <th class="is-narrow" {% include 'includes/table_sorting.twig' with { '_column': 'status' } %}>
+                                        S
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'command' } %}>
+                                        {{ command }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'schedule' } %}>
+                                        {{ schedule }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'notification' } %}>
+                                        {{ notification }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        {{ options }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        <input class="app-check-all" type="checkbox">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in _scheduled_tasks_items %}
+                                    <tr>
+                                        <td class="is-narrow">
+                                            {% if item.status == 'status_pause' %}
+                                                <span class="icon is-medium has-text-grey app-tooltip" data-tippy-content="{{ stopped }}">
+                                                    <i class="fas fa-stop"></i>
+                                                </span>
+                                            {% else %}
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': item.status,
+                                                } %}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if item.type == 'exec' %}
+                                                <span class="icon is-medium app-tooltip" data-tippy-content="{{ execute_command }}">
+                                                    <i class="fas fa-terminal"></i>
+                                                </span>
+                                                <!-- produces a border which has 1px offset
+                                                <span class="icon is-medium is-size-7 app-tooltip" data-tippy-content="{{ execute_command }}">
+                                                    <span class="fa-stack fa-1x has-padding-top-xsmall">
+                                                        <small>
+                                                            <i class="fa fa-square fa-stack-2x"></i>
+                                                            <i class="fas fa-terminal fa-stack-1x fa-inverse"></i>
+                                                        </small>
+                                                    </span>
+                                                </span>
+                                                -->
+                                            {% elseif item.type == 'http' %}
+                                                <span class="icon is-medium app-tooltip" data-tippy-content="{{ call_url }}">
+                                                    <i class="fas fa-globe-americas"></i>
+                                                </span>
+                                            {% elseif item.type == 'php' %}
+                                                <span class="icon is-medium app-tooltip" data-tippy-content="{{ execute_php_script }}">
+                                                    <i class="fas fa-code"></i>
+                                                </span>
+                                            {% endif %}
+
+                                            {{ item.command }}
+
+                                            {% if item.description %}
+                                                <br>
+                                                <span class="has-text-grey">
+                                                    {{ item.description }}
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ item.schedule }}
+                                        </td>
+                                        <td>
+                                            {% if item.notification == 'never' %}
+                                                {{ never }}
+                                            {% elseif item.notification == 'error' %}
+                                                {{ on_errors }}
+                                            {% elseif item.notification == 'always' %}
+                                                {{ always }}
+                                            {% endif %}
+
+                                            {% if item.email %}
+                                                <br>
+                                                <span class="has-text-grey">
+                                                    {{ item.email }}
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="is-narrow">
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'edit',
+                                                '_url': '?page=user_scheduled_tasks&action=edit&id=' ~ item.id
+                                            } %}
+
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'delete',
+                                                '_url': '?page=user_scheduled_tasks&action=delete&id=' ~ item.id
+                                            } %}
+                                        </td>
+                                        <td>
+                                            {{ item.checkbox }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="42" class="has-text-grey-light">
+                                        {{ _scheduled_tasks_items|length }} {{ items_total }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </form>
+
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

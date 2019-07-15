@@ -1,0 +1,361 @@
+{% extends 'base/intern.twig' %}
+
+
+{% block page_scripts %}
+<script>
+    var hideChart = {{ _is_hide_chart ? 'true' : 'false' }};
+    var chartData = [];
+
+    chartData.push({
+        label: '{{ webspace }} / {{ _webspace_human_readable }}',
+        color: '#3273DC',
+        percent: {{ _webspace_percent }},
+    });
+
+    {% if _has_resource_email %}
+        chartData.push({
+            label: '{{ emails }} / {{ _emails_human_readable }}',
+            color: '#23D160',
+            percent: {{ _emails_percent }},
+        });
+    {% endif %}
+
+    {% if _has_resource_databases %}
+        chartData.push({
+            label: '{{ databases }} / {{ _databases_human_readable }}',
+            color: '#FF2B56',
+            percent: {{ _databases_percent }},
+        });
+    {% endif %}
+
+    {% if not _is_unlimited_disk_space %}
+        chartData.push({
+            label: '{{ free }} / {{ _free_human_readable }}',
+            color: '#DBDBDB',
+            percent: {{ _free_percent }},
+        });
+    {% endif %}
+</script>
+<script src="/theme/bulma/assets/js/page_user_dashboard.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="columns">
+
+    <!-- left side -->
+    <div class="column is-half">
+
+        <!-- 1st -->
+        {% include 'includes/card_start_stacked.twig' with { '_label': resources, '_icon': 'fas fa-tachometer-alt' } %}
+            {{ macros.usage_indicator({
+                'label': disk_space,
+                'percent': _disk_space.percent,
+                'current': _disk_space.current,
+                'max': _disk_space.max
+            }) }}
+
+            <div class="app-chart-container has-margin-bottom-medium">
+                <canvas id="app-chart-diskspace" height="90px"></canvas>
+            </div>
+
+            {{ macros.usage_indicator({
+                'label': traffic ~ ' / ' ~ _traffic_month,
+                'percent': _traffic.percent,
+                'current': _traffic.current,
+                'max': _traffic.max
+            }) }}
+
+            {% if _has_resource_main_domains %}
+                {{ macros.usage_indicator({
+                    'label': main_domains,
+                    'percent': _main_domains.percent,
+                    'current': _main_domains.current,
+                    'max': _main_domains.max
+                }) }}
+            {% endif %}
+
+            {% if _has_resource_subdomains %}
+                {{ macros.usage_indicator({
+                    'label': subdomains,
+                    'percent': _subdomains.percent,
+                    'current': _subdomains.current,
+                    'max': _subdomains.max
+                }) }}
+            {% endif %}
+
+            {% if _has_resource_email %}
+                {{ macros.usage_indicator({
+                    'label': email_accounts,
+                    'percent': _email_accounts.percent,
+                    'current': _email_accounts.current,
+                    'max': _email_accounts.max,
+                }) }}
+
+                {{ macros.usage_indicator({
+                    'label': email_addresses,
+                    'percent': _email_addresses.percent,
+                    'current': _email_addresses.current,
+                    'max': _email_addresses.max,
+                }) }}
+            {% endif %}
+
+            {% if _has_resource_databases %}
+                {{ macros.usage_indicator({
+                    'label': databases,
+                    'percent': _databases.percent,
+                    'current': _databases.current,
+                    'max': _databases.max,
+                }) }}
+            {% endif %}
+
+            {% if _has_resource_ftp %}
+                {{ macros.usage_indicator({
+                    'label': ftp_users,
+                    'percent': _ftp_users.percent,
+                    'current': _ftp_users.current,
+                    'max': _ftp_users.max,
+                }) }}
+            {% endif %}
+
+            {% if _has_resource_scheduled_tasks %}
+                {{ macros.usage_indicator({
+                    'label': scheduled_tasks,
+                    'percent': _scheduled_tasks.percent,
+                    'current': _scheduled_tasks.current,
+                    'max': _scheduled_tasks.max,
+                }) }}
+            {% endif %}
+        {% include 'includes/card_end_stacked.twig' %}
+
+        <!-- 2nd -->
+        {% include 'includes/card_start_stacked.twig' with { '_label': account_options, '_icon': 'fas fa-cog', '_has_margin_top': true } %}
+            <p>
+                <strong>{{ directory_listing }}</strong><br>
+                {{ directory_listing_desc }}
+            </p>
+
+            <div class="has-margin-bottom-small"></div>
+
+            {{ forms.button({
+                'label': _is_directory_listing ? enabled : disabled,
+                'style': _is_directory_listing ? 'primary' : 'grey',
+                'url': '?page=' ~ _app.page ~ '&toggle_directory_listing=1'
+            }) }}
+
+            {% if not _is_anonymize_ips_forced %}
+                <div class="has-margin-bottom-large"></div>
+
+                <p>
+                    <strong>{{ anonymize_ips }}</strong><br>
+                    {{ anonymize_ips_desc }}
+                </p>
+
+                <div class="has-margin-bottom-small"></div>
+
+                {{ forms.button({
+                    'label': _is_anonymize_ips ? enabled : disabled,
+                    'style': _is_anonymize_ips ? 'primary' : 'grey',
+                    'url': '?page=' ~ _app.page ~ '&toggle_anonymize_ips=1'
+                }) }}
+            {% endif %}
+        {% include 'includes/card_end_stacked.twig' %}
+
+    </div>
+
+    <!-- right side -->
+    <div class="column is-half">
+
+        <!-- 1st -->
+        {% include 'includes/card_start_stacked.twig' with { '_label': account_information, '_icon': 'fas fa-info-circle' } %}
+
+            <div class="table-container has-margin-bottom-none">
+                <table class="table is-fullwidth is-striped">
+                    <tbody>
+                        <tr>
+                            <th>
+                                {{ main_domains }}
+                            </th>
+                            <td>
+                                {% if _domains is empty %}
+                                    <span class="has-text-grey">
+                                        - {{ no_items_available }} -
+                                    </span>
+                                {% else %}
+                                    <ul>
+                                        {% for item in _domains %}
+                                            <li class="has-no-wrap">
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'edit',
+                                                    '_url': '?page=domains&action=edit&id=' ~ item.id
+                                                } %}
+                                                <a href="http://{{ item.domain }}" target="_blank" rel="nofollow noopener noreferrer">
+                                                    {{ item.domain_utf8 }}
+                                                </a>
+                                                {% if item.deactivated %}
+                                                    {{ macros.tag(disabled, 'is-danger') }}
+                                                {% endif %}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                {{ ip_addresses }}
+                            </th>
+                            <td>
+                                <ul class="horizontal-separated-list">
+                                    {% for ip_address in _ip_addresses %}
+                                    <li>{{ ip_address }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                {{ system_username }}
+                            </th>
+                            <td>
+                                {{ _username }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                {{ absolute_path_home }}
+                            </th>
+                            <td>
+                                {{ _absolute_path_home }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                {{ permissions }}
+                            </th>
+                            <td>
+                                <ul>
+                                {% for item in _permissions %}
+                                    <li>
+                                        {{ item }}
+                                    </li>
+                                {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        {% include 'includes/card_end_stacked.twig' %}
+
+        <!-- 2st -->
+        {% include 'includes/card_start_stacked.twig' with { '_label': contact_data, '_icon': 'fas fa-id-card', '_has_margin_top': true } %}
+            {% if not _has_email %}
+                <p>
+                    <span class="has-text-danger has-text-weight-bold">
+                        {{ attention }}!
+                    </span>
+                    <br>
+                    {{ no_email_specified }}
+                </p>
+            {% endif %}
+
+            <div class="table-container has-margin-bottom-none">
+                <table class="table is-fullwidth is-striped">
+                    <tbody>
+                        {% if _company %}
+                            <tr>
+                                <th class="is-narrow">
+                                    <span class="icon is-small">
+                                        <i class="fas fa-industry"></i>
+                                    </span>
+                                </th>
+                                <th class="is-narrow">
+                                    {{ company }}
+                                </th>
+                                <td>
+                                    {{ _company|e }}
+                                </td>
+                            </tr>
+                        {% endif %}
+                        {% if _name %}
+                            <tr>
+                                <th class="is-narrow">
+                                    <span class="icon is-small">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                </th>
+                                <th class="is-narrow">
+                                    {{ name }}
+                                </th>
+                                <td>
+                                    {{ _name|e }}
+                                </td>
+                            </tr>
+                        {% endif %}
+                        {% if _address or _city %}
+                            <tr>
+                                <th class="is-narrow">
+                                    <span class="icon is-small">
+                                        <i class="fas fa-home"></i>
+                                    </span>
+                                </th>
+                                <th class="is-narrow">
+                                    {{ address }}
+                                </th>
+                                <td>
+                                    {{ _address ? _address|e|nl2br ~ '<br>' }}
+                                    {{ _city ? _city|e }}
+                                </td>
+                            </tr>
+                        {% endif %}
+                        {% if _telephone %}
+                            <tr>
+                                <th class="is-narrow">
+                                    <span class="icon is-small">
+                                        <i class="fas fa-phone"></i>
+                                    </span>
+                                </th>
+                                <th class="is-narrow">
+                                    {{ telephone }}
+                                </th>
+                                <td>{{ _telephone|e }}</td>
+                            </tr>
+                        {% endif %}
+                        {% if _email %}
+                            <tr>
+                                <th class="is-narrow">
+                                    <span class="icon is-small">
+                                        <i class="fas fa-envelope"></i>
+                                    </span>
+                                </th>
+                                <th class="is-narrow">
+                                    {{ email }}
+                                </th>
+                                <td>{{ _email }}</td>
+                            </tr>
+                        {% endif %}
+                        {% if _client_id %}
+                            <tr>
+                                <th class="is-narrow">ID</th>
+                                <th class="is-narrow">
+                                    {{ client_id }}
+                                </th>
+                                <td>{{ _client_id }}</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="has-margin-top-medium">
+                <a class="button is-link" href="?page=profile">{{ update_profile }}</a>
+            </div>
+        {% include 'includes/card_end_stacked.twig' %}
+
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,631 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script id="app-backup-deletion-warning-template" type="text/x-handlebars-template">
+        <p id="app-backup-deletion-warning" class="has-text-danger has-padding-left-medium">
+            <small>
+                {{ backup_deletion_warning }}
+            </small>
+        </p>
+    </script>
+
+    <script src="/theme/bulma/assets/js/page_accounts_general.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/bulma/assets/js/page_accounts_specific.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    {% include 'includes/card_start.twig' %}
+
+        <form action="?page={{ _app.page }}&action={{ _action }}" method="post" autocomplete="off">
+            <input type="hidden" name="submit" value="1">
+            <input type="hidden" name="id" value="{{ _id }}">
+
+            <div class="tabs is-centered">
+                <ul>
+                    <li class="is-active">
+                        <a href="#tab-general-settings">{{ general }}</a>
+                    </li>
+                    <li>
+                        <a href="#tab-contact-data">{{ contact_data }}</a>
+                    </li>
+                    <li>
+                        <a href="#tab-resources-and-permissions">{{ resources_and_permissions }}</a>
+                    </li>
+                    <li>
+                        <a href="#tab-php-settings">PHP</a>
+                    </li>
+                    <li>
+                        <a href="#tab-php-fpm-settings">PHP-FPM</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="tabs-content">
+
+                <div id="tab-general-settings" class="tabs-panel is-active">
+                    {% if _action == 'add' %}
+                        {{ forms.input_wrapped({
+                            'label': username,
+                            'name': 'username',
+                            'value': _username,
+                            'max_length': _username_max_length,
+                            'is_required': true
+                        }) }}
+                    {% else %}
+                        {{ forms.input_wrapped({
+                            'label': username,
+                            'value': _username,
+                            'is_disabled': true,
+                        }) }}
+                    {% endif %}
+
+                    {{ forms.select_wrapped({
+                        'label': language,
+                        'name': 'language',
+                        'options': _languages,
+                        'selected': _languages_selected
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': email,
+                        'name': 'email',
+                        'value': _email,
+                        'type': 'email'
+                    }) }}
+
+                    {% include 'includes/form_password.twig' with { '_leave_empty': _action == 'edit' } %}
+
+                    <div id="app-send-login-credentials" style="display: none">
+                        {{ forms.checkbox_wrapped({
+                            'label': send_login_credentials,
+                            'options': {
+                                'label': yes,
+                                'name': 'is_send_login_credentials',
+                                'value': '1',
+                                'is_checked': _is_send_login_credentials
+                            }
+                        }) }}
+                    </div>
+
+                    {% if _action == 'add' %}
+                        {{ forms.checkbox_wrapped({
+                            'label': create_system_domain,
+                            'help': create_system_domain_help,
+                            'options': {
+                                'label': yes,
+                                'name': 'is_create_system_domain',
+                                'value': '1',
+                                'is_checked': _is_create_system_domain
+                            }
+                        }) }}
+
+                        {% if _skel_templates %}
+                            {{ forms.select_wrapped({
+                                'label': use_skel_template,
+                                'help': use_skel_template_help,
+                                'name': 'skel_template',
+                                'options': _skel_templates,
+                                'selected': _skel_templates_selected,
+                            }) }}
+                        {% endif %}
+                    {% endif %}
+
+
+                    {{ forms.select_wrapped({
+                        'label': account_template,
+                        'help': account_template_help,
+                        'name': 'account_template',
+                        'options': _account_templates,
+                        'selected': _account_templates_selected,
+                        'button': {
+                            'label': apply_template,
+                            'id': 'app-apply-account-template'
+                        }
+                    }) }}
+
+                    {{ forms.textarea_wrapped({
+                        'label': notes,
+                        'help': notes_help,
+                        'name': 'notes',
+                        'value': _notes,
+                        'is_auto_resize': true,
+                    }) }}
+
+                    {{ forms.checkbox_wrapped({
+                        'label': account_is_suspended,
+                        'help': account_is_suspended_help,
+                        'options': {
+                            'label': yes,
+                            'name': 'is_suspended',
+                            'value': '1',
+                            'is_checked': _is_suspended
+                        }
+                    }) }}
+
+                    {{ forms.label_wrapped({
+                        'label': automation,
+                        'has_small_margin': true,
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'help': suspend_on_date,
+                        'name': 'suspend_on',
+                        'value': _suspend_on,
+                        'type': 'date',
+                        'paceholder': 'YYYY-MM-DD',
+                        'min': _current_date,
+                        'max': '2099-12-31'
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'help': delete_on_date,
+                        'name': 'delete_on',
+                        'value': _delete_on,
+                        'type': 'date',
+                        'paceholder': 'YYYY-MM-DD',
+                        'min': _current_date,
+                        'max': '2099-12-31'
+                    }) }}
+                </div>
+
+                <div id="tab-contact-data" class="tabs-panel">
+                    {{ forms.input_wrapped({
+                        'label': first_name,
+                        'name': 'first_name',
+                        'value': _first_name,
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': last_name,
+                        'name': 'last_name',
+                        'value': _last_name,
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': company,
+                        'name': 'company',
+                        'value': _company,
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': telephone,
+                        'name': 'telephone',
+                        'value': _telephone,
+                        'type': 'tel',
+                    }) }}
+
+                    {{ forms.textarea_wrapped({
+                        'label': address,
+                        'name': 'address',
+                        'value': _address,
+                        'is_auto_resize': true
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': zip,
+                        'name': 'zip',
+                        'value': _zip,
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': city,
+                        'name': 'city',
+                        'value': _city,
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': client_id,
+                        'name': 'client_id',
+                        'value': _client_id,
+                    }) }}
+                </div>
+
+                <div id="tab-resources-and-permissions" class="tabs-panel">
+                    {{ forms.input_wrapped({
+                        'label': disk_space,
+                        'help': disk_space_help,
+                        'name': 'disk_space',
+                        'type': 'number',
+                        'value': _disk_space,
+                        'min': 1,
+                        'checkbox': {
+                            'label': unlimited,
+                            'name': 'disk_space_ul',
+                            'value': '1',
+                            'is_checked': _disk_space_ul,
+                        },
+                        'addons': {
+                            'left': {
+                                'type': 'select',
+                                'select': {
+                                    'name': 'disk_space_multiplier',
+                                    'options': _disk_space_multipliers,
+                                    'selected': _disk_space_multipliers_selected
+                                }
+                            },
+                        }
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': traffic,
+                        'name': 'traffic',
+                        'type': 'number',
+                        'value': _traffic,
+                        'min': 0,
+                        'checkbox': {
+                            'label': unlimited,
+                            'name': 'traffic_ul',
+                            'value': '1',
+                            'is_checked': _traffic_ul,
+                        },
+                        'addons': {
+                            'left': {
+                                'type': 'select',
+                                'select': {
+                                    'name': 'traffic_multiplier',
+                                    'options': _traffic_multipliers,
+                                    'selected': _traffic_multipliers_selected,
+                                }
+                            },
+                        }
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': domains,
+                        'help': domains_help,
+                        'name': 'domains',
+                        'type': 'number',
+                        'value': _domains,
+                        'min': 0,
+                        'checkbox': {
+                            'label': unlimited,
+                            'name': 'domains_ul',
+                            'value': '1',
+                            'is_checked': _domains_ul,
+                        }
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': subdomains,
+                        'name': 'subdomains',
+                        'type': 'number',
+                        'value': _subdomains,
+                        'min': 0,
+                        'checkbox': {
+                            'label': unlimited,
+                            'name': 'subdomains_ul',
+                            'value': '1',
+                            'is_checked': _subdomains_ul,
+                        }
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': email_accounts,
+                        'name': 'email_accounts',
+                        'type': 'number',
+                        'value': _email_accounts,
+                        'min': 0,
+                        'checkbox': {
+                            'label': unlimited,
+                            'name': 'email_accounts_ul',
+                            'value': '1',
+                            'is_checked': _email_accounts_ul,
+                        }
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': email_addresses,
+                        'name': 'email_addresses',
+                        'type': 'number',
+                        'value': _email_addresses,
+                        'min': 0,
+                        'checkbox': {
+                            'label': unlimited,
+                            'name': 'email_addresses_ul',
+                            'value': '1',
+                            'is_checked': _email_addresses_ul,
+                        }
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': databases,
+                        'name': 'databases',
+                        'type': 'number',
+                        'value': _databases,
+                        'min': 0,
+                        'checkbox': {
+                            'label': unlimited,
+                            'name': 'databases_ul',
+                            'value': '1',
+                            'is_checked': _databases_ul,
+                        }
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': ftp_users,
+                        'name': 'ftp_users',
+                        'type': 'number',
+                        'value': _ftp_users,
+                        'min': 0,
+                        'checkbox': {
+                            'label': unlimited,
+                            'name': 'ftp_users_ul',
+                            'value': '1',
+                            'is_checked': _ftp_users_ul,
+                        }
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': scheduled_tasks,
+                        'name': 'scheduled_tasks',
+                        'type': 'number',
+                        'value': _scheduled_tasks,
+                        'min': 0,
+                        'checkbox': {
+                            'label': unlimited,
+                            'name': 'scheduled_tasks_ul',
+                            'value': '1',
+                            'is_checked': _scheduled_tasks_ul,
+                        }
+                    }) }}
+
+                    {{ forms.checkbox_wrapped({
+                        'label': permissions,
+                        'options': [
+                            {
+                                'label': 'FTP',
+                                'name': 'ftp',
+                                'value': '1',
+                                'is_checked': _ftp,
+                            },
+                            {
+                                'label': 'PHP',
+                                'name': 'php',
+                                'value': '1',
+                                'is_checked': _php,
+                            },
+                            {
+                                'label': 'Perl/CGI',
+                                'help': no_jail,
+                                'name': 'perl',
+                                'value': '1',
+                                'is_checked': _perl,
+                            },
+                            {
+                                'label': 'SSH',
+                                'help': no_jail,
+                                'name': 'ssh',
+                                'value': '1',
+                                'is_checked': _ssh,
+                            },
+                            {
+                                'label': create_backups,
+                                'name': 'backup',
+                                'value': '1',
+                                'is_checked': _backup,
+                            },
+                            {
+                                'label': file_manager,
+                                'name': 'file_manager',
+                                'value': '1',
+                                'is_checked': _file_manager,
+                            },
+                            {
+                                'label': dns_editor,
+                                'name': 'dns_editor',
+                                'value': '1',
+                                'is_checked': _dns_editor,
+                            },
+                            {
+                                'label': domain_security,
+                                'help': domain_security_help,
+                                'name': 'domain_security',
+                                'value': '1',
+                                'is_checked': _domain_security,
+                            },
+                            {
+                                'label': manage_certs,
+                                'name': 'manage_certs',
+                                'value': '1',
+                                'is_checked': _manage_certs,
+                            },
+                            {
+                                'label': db_remote_access,
+                                'name': 'db_remote_access',
+                                'value': '1',
+                                'is_checked': _db_remote_access,
+                            },
+                            {
+                                'label': panel_access,
+                                'name': 'panel_access',
+                                'value': '1',
+                                'is_checked': _panel_access,
+                            },
+                            {
+                                'label': change_personal_data,
+                                'help': change_personal_data_help,
+                                'name': 'change_personal_data',
+                                'value': '1',
+                                'is_checked': _change_personal_data,
+                            },
+                        ]
+                    }) }}
+                </div>
+
+                <div id="tab-php-settings" class="tabs-panel">
+                    {{ forms.input_wrapped({
+                        'label': 'memory_limit',
+                        'help': memory_limit_help,
+                        'name': 'memory_limit',
+                        'value': _memory_limit,
+                        'is_required': true,
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': 'max_execution_time',
+                        'help': max_execution_time_help,
+                        'name': 'max_execution_time',
+                        'type': 'number',
+                        'min': 0,
+                        'value': _max_execution_time,
+                        'is_required': true,
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': 'post_max_size',
+                        'help': post_max_size_help,
+                        'name': 'post_max_size',
+                        'value': _post_max_size,
+                        'is_required': true,
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': 'upload_max_filesize',
+                        'help': upload_max_filesize_help,
+                        'name': 'upload_max_filesize',
+                        'value': _upload_max_filesize,
+                        'is_required': true,
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': 'open_basedir',
+                        'help': open_basedir_help,
+                        'name': 'open_basedir',
+                        'value': _open_basedir,
+                        'is_required': true,
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': 'sendmail_from',
+                        'help': sendmail_from_help,
+                        'name': 'sendmail_from',
+                        'type': 'email',
+                        'value': _sendmail_from,
+                    }) }}
+
+                    {{ forms.textarea_wrapped({
+                        'label': 'disable_functions',
+                        'help': disable_functions_help,
+                        'name': 'disable_functions',
+                        'value': _disable_functions,
+                    }) }}
+
+                    {{ forms.textarea_wrapped({
+                        'label': additional_settings,
+                        'help': additional_settings_help,
+                        'name': 'additional_settings',
+                        'value': _additional_settings,
+                        'rows': 5,
+                        'is_auto_resize': true,
+                    }) }}
+                </div>
+
+                <div id="tab-php-fpm-settings" class="tabs-panel">
+                    {{ forms.radio_wrapped({
+                        'label': 'pm',
+                        'help': pm_help,
+                        'is_required': true,
+                        'options': [
+                            {
+                                'label': 'static',
+                                'help': static_help,
+                                'name': 'pm',
+                                'value': 'static',
+                                'is_checked': _pm == 'static',
+                            },
+                            {
+                                'label': 'ondemand',
+                                'help': ondemand_help,
+                                'name': 'pm',
+                                'value': 'ondemand',
+                                'is_checked': _pm == 'ondemand',
+                            },
+                            {
+                                'label': 'dynamic',
+                                'help': dynamic_help,
+                                'name': 'pm',
+                                'value': 'dynamic',
+                                'is_checked': _pm == 'dynamic',
+                            },
+                        ]
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': 'pm.max_children',
+                        'help': max_children_help,
+                        'name': 'max_children',
+                        'type': 'number',
+                        'min': 1,
+                        'value': _max_children,
+                        'is_required': true,
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': 'pm.max_requests',
+                        'help': max_requests_help,
+                        'name': 'max_requests',
+                        'type': 'number',
+                        'min': 0,
+                        'value': _max_requests,
+                        'is_required': true,
+                    }) }}
+
+                    <div class="app-show-with-pm-dynamic" style="display: none">
+                        {{ forms.label_wrapped({
+                            'label': 'pm.start_servers',
+                            'help': start_servers_help,
+                            'value': 'pm.min_spare_servers + (pm.max_spare_servers - pm.min_spare_servers) / 2',
+                        }) }}
+
+                        {{ forms.input_wrapped({
+                            'label': 'pm.min_spare_servers',
+                            'help': min_spare_servers_help,
+                            'name': 'min_spare_servers',
+                            'type': 'number',
+                            'min': 1,
+                            'value': _min_spare_servers,
+                            'is_required_fake': true
+                        }) }}
+
+                        {{ forms.input_wrapped({
+                            'label': 'pm.max_spare_servers',
+                            'help': max_spare_servers_help,
+                            'name': 'max_spare_servers',
+                            'type': 'number',
+                            'min': 1,
+                            'value': _max_spare_servers,
+                            'is_required_fake': true
+                        }) }}
+                    </div>
+
+                    {{ forms.checkbox_wrapped({
+                        'label': enable_status_page,
+                        'help': enable_status_page_help,
+                        'options': {
+                            'label': enabled,
+                            'name': 'status_enabled',
+                            'value': '1',
+                            'is_checked': _status_enabled
+                        }
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'help': ip_restriction,
+                        'name': 'status_ip_restriction',
+                        'value': _ip_restriction,
+                    }) }}
+                </div>
+
+            </div>
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': 'admin_accounts_user' }, '_confirm': true } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}

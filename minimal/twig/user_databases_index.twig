@@ -1,0 +1,174 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-large">
+        {{ help }}
+    </p>
+
+    <!-- button line -->
+    {% include 'includes/index_page_button_line.twig' with ({
+        '_usage': _usage|merge({'label': databases}),
+        '_add_btn_label': add_database,
+        '_add_btn_url': '?page=user_databases&action=add',
+        '_form_id': 'form-database-index'
+    }) %}
+
+    <!-- item table -->
+    <div class="card">
+        <div class="card-content">
+
+            {% if _database_items is empty %}
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+
+                <form id="form-database-index" action="?page=user_databases&action=delete" method="post">
+                    <div class="table-container">
+                        <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                            <thead>
+                                <tr>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'name' } %}>
+                                        {{ database_name }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'username' } %}>
+                                        {{ username }}
+                                    </th>
+                                    {% if _has_remote_access %}
+                                        <th {% include 'includes/table_sorting.twig' with { '_column': 'has_remote_access' } %}>
+                                            {{ remote_access }}
+                                        </th>
+                                    {% endif %}
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'size_bytes' } %}>
+                                        {{ database_size }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        {{ connection_data }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        {{ options }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        <label>
+                                            <input class="app-check-all" type="checkbox">
+                                        </label>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in _database_items %}
+                                    <tr>
+                                        <td>
+                                            {{ item.name }}
+                                            {{ item.use_backticks ? '<sup>*<sup>' }}<br>
+                                            <span class="has-text-grey">
+                                                {{ item.description|e }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {{ item.username }}
+                                        </td>
+                                        {% if _has_remote_access %}
+                                            <td>
+                                                {{ macros.true_false_indicator(item.has_remote_access) }}
+                                            </td>
+                                        {% endif %}
+                                        <td>
+                                            {{ item.size_human_readable }}
+                                        </td>
+                                        <td>
+                                            <a data-open-modal="app-modal-connection-data-{{ item.id }}">
+                                                {{ show }}
+                                            </a>
+                                        </td>
+                                        <td class="is-narrow">
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'edit',
+                                                '_url': '?page=user_databases&action=edit&id=' ~ item.id
+                                            } %}
+
+                                            {% if _is_pma_enabled %}
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'database',
+                                                    '_url': _pma_url ~ '/?pma_username=' ~ item.username
+                                                } %}
+                                            {% endif %}
+
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'delete',
+                                                '_url': '?page=user_databases&action=delete&id=' ~ item.id
+                                            } %}
+                                        </td>
+                                        <td>
+                                            {{ item.checkbox }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="42" class="has-text-grey-light">
+                                        {{ _database_items|length }} {{ items_total }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </form>
+
+                {% if _show_use_backticks_note %}
+                    <p class="has-margin-top-medium">
+                        <small>
+                            <sup>*</sup> {{ backticks_note }}
+                        </small>
+                    </p>
+                {% endif %}
+
+                {% for item in _database_items %}
+                    <div id="app-modal-connection-data-{{ item.id }}" class="modal">
+                        <div class="modal-background"></div>
+                        <div class="modal-card">
+                            <header class="modal-card-head">
+                                <p class="modal-card-title">{{ connection_data }}</p>
+                                <button class="delete app-modal-close" type="button"></button>
+                            </header>
+                            <div class="modal-card-body">
+                                <div class="table-container">
+                                    <table class="table is-centered is-striped is-hoverable">
+                                        <tbody>
+                                            <tr>
+                                                <th>{{ database_name }}</th>
+                                                <td>{{ item.name }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>{{ username }}</th>
+                                                <td>{{ item.username }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>{{ host }}</td>
+                                                <td>{{ item.host }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>{{ port }}</th>
+                                                <td>{{ item.port }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <footer class="modal-card-foot">
+                                {{ forms.button({'label': close, 'class': 'app-modal-close', 'type': 'button' }) }}
+                            </footer>
+                        </div>
+                    </div>
+                {% endfor %}
+
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,29 @@
+{% spaceless %}
+    {% set addons = {
+        'right': {
+            'type': 'action',
+            'label': browse ~ '...',
+            'action': 'app-browse-directory'
+        }
+    } %}
+    {% if _append_directory %}
+        {% set addons = addons | merge({
+            'left': {
+                'label': _append_directory,
+            }
+        }) %}
+    {% endif %}
+{% endspaceless %}
+
+{{ forms.input_wrapped({
+    'name': 'path',
+    'type': 'text',
+    'label': _label | default(directory),
+    'value': _value,
+    'help': _help,
+    'addons': addons,
+}) }}
+
+<div id="app-directory-browser" class="is-hidden has-margin-bottom-medium has-padding-small textarea" style="height: 13.2rem; overflow-y: auto">
+    <!-- content added with ajax -->
+</div>

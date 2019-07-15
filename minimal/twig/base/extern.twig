@@ -1,0 +1,37 @@
+{% extends 'base/base.twig' %}
+
+{% block body_content %}
+<section class="hero is-primary is-fullheight is-bold">
+    <div class="hero-body">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-4 is-offset-4">
+
+                    <div class="box has-dark-shadow">
+                        <figure class="has-margin-top-medium has-margin-bottom-medium">
+                            {% if _whitelabel.banner_extern %}
+                                <div class="has-text-centered">
+                                    <img src="{{ _whitelabel.banner_extern }}" style="max-height: 10rem" alt="logo">
+                                </div>
+                            {% else %}
+                                <img src="theme/bulma/assets/img/keyhelp.svg" alt="logo">
+                            {% endif %}
+                        </figure>
+
+                        {% include 'includes/events.twig' %}
+
+                        <div class="has-margin-top-medium"></div>
+
+                        {% block content %}
+                        {% endblock %}
+                    </div>
+
+                    <p class="has-text-centered is-size-7 has-text-grey-lighter">
+                        {{ _whitelabel.footer ? _whitelabel.footer|raw : _app.footer|raw }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

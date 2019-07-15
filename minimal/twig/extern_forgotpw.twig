@@ -1,0 +1,40 @@
+{% extends 'base/extern.twig' %}
+
+
+
+{% block content %}
+
+    <p class="has-text-centered has-margin-bottom-medium">
+        {{ password_reset_instruction }}
+	</p>
+
+    <form action="?page=forgotpw" method="post">
+        <input type="hidden" name="submit" value="1">
+
+        {{ forms.input_wrapped({
+            'name': 'username',
+            'type': 'text',
+            'label': username,
+            'is-autofocus': true,
+        }) }}
+
+        {{ forms.input_wrapped({
+            'name': 'email',
+            'type': 'email',
+            'label': email,
+        }) }}
+
+        <div class="has-margin-bottom-large"></div>
+
+        {{ forms.button({
+            'label': request_email,
+            'style': 'primary',
+            'class': 'is-fullwidth'
+        }) }}
+    </form>
+
+    <p class="has-text-centered has-text-link has-margin-top-medium">
+        <a href="index.php">{{ back_to_login }}</a>
+    </p>
+
+{% endblock %}

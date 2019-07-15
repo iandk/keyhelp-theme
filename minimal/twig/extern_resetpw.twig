@@ -1,0 +1,32 @@
+{% extends 'base/extern.twig' %}
+
+
+
+{% block content %}
+
+    <p class="has-text-centered has-margin-bottom-medium">
+        {{ reset_password_help }}
+	</p>
+
+    <form action="?page=forgotpw" method="post">
+        <input type="hidden" name="submit" value="1">
+        <input type="hidden" name="request_id" value="{{ VAL_REQUEST_ID }}">
+        <input type="hidden" name="token" value="{{ VAL_TOKEN }}">
+
+        {% include 'includes/form_password.twig' %}
+
+        <div class="has-margin-bottom-large"></div>
+
+        {{ forms.button({
+            'label': save,
+            'style': 'primary',
+            'class': 'is-fullwidth'
+        }) }}
+    </form>
+
+    <p class="has-text-centered has-text-link has-margin-top-medium">
+        <a href="index.php">{{ back_to_login }}</a>
+    </p>
+
+{% endblock %}
+

@@ -1,0 +1,42 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    {% include 'includes/delete_page.twig' with {
+        '_action': '?page=admin_accounts_user&action=delete',
+        '_back_page': 'admin_accounts_user',
+        '_config': {
+            'username': {
+                'label': username
+            },
+            'company': {
+                'label': company
+            },
+            'contact_name': {
+                'label': contact_name
+            },
+            'notes': {
+                'label': notes,
+                'is_nl2br': true
+            },
+            'disk_space': {
+                'label': disk_space
+            },
+            'domains': {
+                'label': domains,
+                'is_url': true,
+            },
+            'permissions': {
+                'label': permissions,
+            },
+            'certificates': {
+                'label': certificates,
+                'help': certificates_help
+            },
+        },
+        '_items': _user_accounts
+    } %}
+
+{% endblock %}

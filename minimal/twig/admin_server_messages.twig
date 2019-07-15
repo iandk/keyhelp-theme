@@ -1,0 +1,154 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    <!-- button line -->
+    <div class="level">
+        <div class="level-left">
+            <div class="level-item">
+            </div>
+        </div>
+        <div class="level-right">
+            <div class="level-item">
+                {{ forms.button({
+                    'label': clear_messages,
+                    'style': 'secondary',
+                    'modal': 'app-modal-reset-list'
+                }) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- view options -->
+    <form action="?page=admin_server_messages" method="post">
+        <input type="hidden" name="update_view" value="1">
+
+        <div class="card has-margin-bottom-medium">
+            <div class="card-content">
+                <div class="level">
+                    <div class="level-left">
+                        <div class="level-item">
+                            <strong>{{ view_options }}</strong>
+                        </div>
+                    </div>
+                    <div class="level-right">
+                        <div class="level-item">
+                            <label>
+                                <input type="checkbox" name="show_info" value="1" {{ _show_info ? 'checked' }}> {{ info }}
+                            </label>
+                        </div>
+                        <div class="level-item">
+                            <label>
+                                <input type="checkbox" name="show_warning" value="1" {{ _show_warning ? 'checked' }}> {{ warning }}
+                            </label>
+                        </div>
+                        <div class="level-item">
+                            <label>
+                                <input type="checkbox" name="show_error" value="1" {{ _show_error ? 'checked' }}> {{ error }}
+                            </label>
+                        </div>
+
+                        <div class="level-item">
+                            {{ forms.button({
+                                'label': view,
+                                'style': 'grey',
+                                'icon': 'fas fa-search'
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- item table -->
+    <div class="card">
+        <div class="card-content">
+
+            {% if _messages is empty %}
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+                <div class="table-container">
+                    <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                        <thead>
+                            <tr>
+                                <th class="is-narrow">
+                                    {{ time }}
+                                </th>
+                                <th>
+                                    {{ message }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in _messages %}
+                                <tr>
+                                    <td class="has-no-wrap">
+                                        {{ item.time }}
+                                    </td>
+                                    <td>
+                                        {% if item.type == 'info' %}
+                                            <span class="icon is-medium has-text-info app-tooltip" data-tippy-content="{{ info }}">
+                                                <i class="fas fa-info-circle"></i>
+                                            </span>
+                                        {% elseif item.type == 'warning' %}
+                                            <span class="icon is-medium has-text-warning app-tooltip" data-tippy-content="{{ warning }}">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                            </span>
+                                        {% elseif item.type == 'error' %}
+                                            <span class="icon is-medium has-text-danger app-tooltip" data-tippy-content="{{ error }}">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                            </span>
+                                        {% endif %}
+
+                                        {{ item.message }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="42" class="has-text-grey-light">
+                                    {{ _messages|length }} {{ items_total }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- pagination -->
+    {% include 'includes/pagination.twig' with { 'params': _pagination } %}
+
+    <!-- modal -->
+    <form action="?page=admin_server_messages" method="post">
+        <input type="hidden" name="reset" value="1">
+
+        <div id="app-modal-reset-list" class="modal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">{{ clear_messages }}</p>
+                    <button class="delete app-modal-close" type="button"></button>
+                </header>
+                <div class="modal-card-body">
+                    <p class="has-text-centered">
+                        {{ are_you_sure }}
+                    </p>
+                </div>
+                <footer class="modal-card-foot">
+                    {{ forms.button({'label': yes, 'style': 'primary' }) }}
+                    {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+                </footer>
+            </div>
+        </div>
+    </form>
+
+{% endblock %}

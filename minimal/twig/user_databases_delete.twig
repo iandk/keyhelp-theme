@@ -1,0 +1,28 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    {% include 'includes/delete_page.twig' with {
+        '_action': '?page=user_databases&action=delete',
+        '_back_page': 'user_databases',
+        '_config': {
+            'name': {
+                'label': database_name
+            },
+            'username': {
+                'label': username
+            },
+            'description': {
+                'label': description
+            },
+            'remote_hosts': {
+                'label': remote_access,
+                'is_hidden': not _has_remote_access
+            },
+        },
+        '_items': _database_items
+    } %}
+
+{% endblock %}

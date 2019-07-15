@@ -1,0 +1,2 @@
+{% set _table = _table is empty ? '0' : _table %}
+data-is-sortable data-sorting-table="{{ _table }}" data-sorting-column="{{ _column }}" data-sorting-order="{{ _table_sorting[_table].column == _column ? _table_sorting[_table].order : '' }}"

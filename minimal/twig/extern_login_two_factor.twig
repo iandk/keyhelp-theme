@@ -1,0 +1,35 @@
+{% extends 'base/extern.twig' %}
+
+{% block content %}
+
+    {% include 'includes/browser_requirements.twig' %}
+
+    <form action="?page=login_two_factor" method="post">
+        <input type="hidden" name="submit" value="1">
+
+        {% if _open_page %}
+            <input type="hidden" name="open_page" value="{{ _open_page }}">
+        {% endif %}
+
+        {{ forms.input_wrapped({
+            'label': auth_code,
+            'help': auth_code_help,
+            'type': 'text',
+            'name': 'auth_code',
+            'is_autofocus': true,
+        }) }}
+
+        <div class="has-margin-top-large has-margin-bottom-large">
+            {{ forms.button({
+                'label': verify,
+                'style': 'primary',
+                'class': 'is-fullwidth'
+            }) }}
+        </div>
+    </form>
+
+    {% if _app.is_demo %}
+        {% include 'includes/demo_login_info.twig' %}
+    {% endif %}
+
+{% endblock %}

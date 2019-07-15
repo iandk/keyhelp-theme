@@ -1,0 +1,586 @@
+{% extends 'base/intern.twig' %}
+
+
+{% block page_scripts %}
+    <script src="/theme/bulma/assets/js/page_file_manager.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-large">
+        {{ help }}
+    </p>
+
+    <!-- button line -->
+    <div class="level has-margin-bottom-medium">
+        <div class="level-left">
+        </div>
+        <div class="level-right">
+            <div class="level-item">
+                {{ forms.button({
+                    'label': new,
+                    'style': 'primary',
+                    'modal': 'app-modal-new'
+                }) }}
+            </div>
+            <div class="level-item">
+                {{ forms.button({
+                    'label': upload,
+                    'style': 'primary',
+                    'modal': 'app-modal-upload'
+                }) }}
+            </div>
+            <div class="level-item">
+                {{ forms.button({
+                    'label': delete_selected,
+                    'style': 'secondary',
+                    'modal': 'app-modal-delete-selection',
+                }) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- path -->
+    <div class="card has-margin-bottom-medium">
+        <div class="card-content">
+            <a href="?page={{ _app.page }}&path=/">
+                <span class="icon is-medium">
+                    <i class="fas fa-home"></i>
+                </span>
+            </a>
+            <ul class="horizontal-separated-list">
+                <li></li>
+                {% for item in _breadcrumbs %}
+                    <li>
+                        {% if loop.last %}
+                            {{ item.label }}
+                        {% else %}
+                            <a href="?page={{ _app.page }}&change_dir={{ item.change_dir }}">
+                                {{ item.label }}
+                            </a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- item table -->
+    <div class="card">
+        <div class="card-content">
+
+            {% if _files is empty %}
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+
+                <form id="form-file-manager" action="?page={{ _app.page }}&action=delete" method="post">
+                    <input type="hidden" name="working_dir" value="{{ _working_dir }}">
+
+                    <div class="table-container">
+                        <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                            <thead>
+                                <tr>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'name' } %}>
+                                        {{ name }}
+                                    </th>
+                                    <th class="is-narrow" {% include 'includes/table_sorting.twig' with { '_column': 'size' } %}>
+                                        {{ size }}
+                                    </th>
+                                    <th class="is-narrow" {% include 'includes/table_sorting.twig' with { '_column': 'modified_time' } %}>
+                                        {{ modified_time }}
+                                    </th>
+                                    <th class="is-narrow" {% include 'includes/table_sorting.twig' with { '_column': 'permissions' } %}>
+                                        {{ permissions }}
+                                    </th>
+                                    <th class="is-narrow" {% include 'includes/table_sorting.twig' with { '_column': 'user' } %}>
+                                        {{ owner }}
+                                    </th>
+                                    <th class="is-narrow" {% include 'includes/table_sorting.twig' with { '_column': 'group' } %}>
+                                        {{ group }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        {{ options }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        <input class="app-check-all" type="checkbox">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in _files %}
+                                    <tr>
+                                        <td class="has-no-wrap">
+                                            {% if item.is_dir %}
+                                                <a href="?page={{ _app.page }}&change_dir={{ item.change_dir }}">
+                                                    {% include 'includes/icon_files.twig' with { _type: item.type } %}
+                                                    {{ item.name }}
+                                                </a>
+                                            {% else %}
+                                                {% include 'includes/icon_files.twig' with { _type: item.type } %}
+                                                {{ item.name }}
+                                            {% endif %}
+                                        </td>
+                                        <td class="has-text-right has-no-wrap">
+                                            {{ item.is_dir ? '' : item.size }}
+                                        </td>
+                                        <td class="has-no-wrap">
+                                            {{ item.modified_time }}
+                                        </td>
+                                        <td class="has-no-wrap">
+                                            {{ item.permissions|chunk_split(3, ' ') }}
+                                        </td>
+                                        <td class="has-no-wrap">
+                                            {{ item.user }}
+                                        </td>
+                                        <td class="has-no-wrap">
+                                            {{ item.group }}
+                                        </td>
+                                        <td class="is-narrow">
+                                            {% if not item.is_protected %}
+
+                                                {% set extended_menu %}
+                                                    <div class="has-text-left has-no-wrap">
+                                                        <!-- configuration -->
+                                                        <div class="app-configuration" style="display: none">
+                                                            <input type="text" name="path" value="{{ item.path }}">
+                                                            <input type="text" name="id" value="{{ item.name }}">
+                                                            <input type="text" name="permissions" value="{{ item.permissions_numeric }}">
+                                                        </div>
+
+                                                        {% if item.is_editable %}
+                                                            <p>
+                                                                {% include 'includes/icon.twig' with {
+                                                                    '_type': 'edit',
+                                                                    '_label': edit,
+                                                                    '_url': '?page=' ~ _app.page ~ '&action=edit&working_dir=' ~ _working_dir ~ '&id=' ~ item.name ~ '&sid=' ~ _app.sid
+                                                                } %}
+                                                            </p>
+                                                        {% endif %}
+
+                                                        {% if item.is_file or item.is_dir %}
+                                                            <p class="app-modal-rename-trigger">
+                                                                {% include 'includes/icon.twig' with {
+                                                                    '_type': 'file_rename',
+                                                                    '_label': rename,
+                                                                    '_url': 'javascript:void(0)'
+                                                                } %}
+                                                            </p>
+
+                                                            <p class="app-modal-permissions-trigger">
+                                                                {% include 'includes/icon.twig' with {
+                                                                    '_type': 'file_permissions',
+                                                                    '_label': change_permissions,
+                                                                    '_url': 'javascript:void(0)'
+                                                                } %}
+                                                            </p>
+                                                        {% endif %}
+
+                                                        {% if item.is_archive %}
+                                                            <p>
+                                                                <hr class="dropdown-divider">
+                                                            </p>
+                                                            <p class="app-modal-extract-trigger">
+                                                                {% include 'includes/icon.twig' with {
+                                                                    '_type': 'extract',
+                                                                    '_label': extract_archive,
+                                                                    '_url': 'javascript:void(0)'
+                                                                } %}
+                                                            </p>
+                                                        {% endif %}
+
+
+                                                        {% if item.is_file %}
+                                                            <p>
+                                                                <hr class="dropdown-divider">
+                                                            </p>
+                                                            <p>
+                                                                {% include 'includes/icon.twig' with {
+                                                                    '_type': 'download',
+                                                                    '_label': download,
+                                                                    '_url': '?page=' ~ _app.page ~ '&action=download&working_dir=' ~ _working_dir ~ '&id=' ~ item.name ~ '&sid=' ~ _app.sid
+                                                                } %}
+                                                            </p>
+                                                        {% endif %}
+
+                                                        {% if not item.is_link %}
+                                                            <p>
+                                                                <hr class="dropdown-divider">
+                                                            </p>
+                                                        {% endif %}
+
+                                                        <p class="app-modal-delete-trigger">
+                                                            {% include 'includes/icon.twig' with {
+                                                                '_type': 'delete',
+                                                                '_label': delete,
+                                                                '_url': 'javascript:void(0)'
+                                                            } %}
+                                                        </p>
+                                                    </div>
+                                                {% endset %}
+
+                                                <button class="app-extended-menu button is-small has-text-link" type="button" data-tippy-content="{{ extended_menu|escape }}">
+                                                    <span class="icon is-small">
+                                                        <i class="fas fa-bars"></i>
+                                                    </span>
+                                                    <span class="icon is-small">
+                                                         <i class="fas fa-chevron-down fa-xs"></i>
+                                                    </span>
+                                                </button>
+
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if not item.is_protected %}
+                                                <label>
+                                                    <input type="checkbox" name="ids[]" value="{{ item.name }}">
+                                                </label>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="42" class="has-text-grey-light">
+                                        {{ _files|length }} {{ items_total }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                    </div>
+                </form>
+
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ---------------------------------------------------------------------------------------------------------------
+        Modal | New
+    ---------------------------------------------------------------------------------------------------------------- -->
+    <form action="?page={{ _app.page }}&action=new" method="post">
+        <input type="hidden" name="working_dir" value="{{ _working_dir }}">
+
+        <div id="app-modal-new" class="modal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">{{ new }}</p>
+                    <button class="delete app-modal-close" type="button"></button>
+                </header>
+                <div class="modal-card-body">
+                    <div class="has-text-centered">
+                        <p>{{ current_path }}</p>
+                        <p class="has-text-weight-bold has-margin-top-xsmall has-margin-bottom-medium">{{ _working_dir }}</p>
+                    </div>
+
+                    {{ forms.radio_wrapped({
+                        'label': please_select,
+                        'is_required': true,
+                        'options': [
+                            {
+                                'label': empty_file,
+                                'name': 'type',
+                                'value': 'file',
+                                'is_checked': true,
+                            },
+                            {
+                                'label': directory,
+                                'name': 'type',
+                                'value': 'directory',
+                            },
+                        ]
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': name,
+                        'name': 'name',
+                        'type': 'text',
+                        'is_required': true,
+                    }) }}
+                </div>
+                <footer class="modal-card-foot">
+                    {{ forms.button({'label': create, 'style': 'primary' }) }}
+                    {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+                </footer>
+            </div>
+        </div>
+    </form>
+
+    <!-- ---------------------------------------------------------------------------------------------------------------
+        Modal | Upload
+    ---------------------------------------------------------------------------------------------------------------- -->
+    <form action="?page={{ _app.page }}&action=upload" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="working_dir" value="{{ _working_dir }}">
+
+        <div id="app-modal-upload" class="modal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">{{ upload }}</p>
+                    <button class="delete app-modal-close" type="button"></button>
+                </header>
+                <div class="modal-card-body">
+                    <div class="has-text-centered">
+                        <p>{{ current_path }}</p>
+                        <p class="app-current-path has-text-weight-bold has-margin-top-xsmall has-margin-bottom-medium">{{ _working_dir }}</p>
+                    </div>
+
+                    {% for i in 0..4 %}
+                        {{ forms.upload_wrapped({
+                            'name': 'file_' ~ i,
+                            'button_label': choose_file
+                        }) }}
+                    {% endfor %}
+
+                    <p class="has-text-grey has-text-centered">
+                        {{ max_file_size }}: {{ _upload_max_filesize }} / {{ total }}: {{ _post_max_size }}
+                    </p>
+                </div>
+                <footer class="modal-card-foot">
+                    {{ forms.button({'label': upload, 'style': 'primary' }) }}
+                    {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+                </footer>
+            </div>
+        </div>
+    </form>
+
+    <!-- ---------------------------------------------------------------------------------------------------------------
+        Modal | Delete
+    ---------------------------------------------------------------------------------------------------------------- -->
+    <div id="app-modal-delete-selection" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">{{ delete_selected }}</p>
+                <button class="delete app-modal-close" type="button"></button>
+            </header>
+            <div class="modal-card-body">
+                <p class="has-text-centered">
+                    {{ are_you_sure_delete_selection }}
+                </p>
+            </div>
+            <footer class="modal-card-foot">
+                {{ forms.button({'label': yes, 'style': 'primary', 'submit_form': 'form-file-manager' }) }}
+                {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+            </footer>
+        </div>
+    </div>
+
+    <form action="?page={{ _app.page }}&action=delete" method="post">
+        <div id="app-modal-delete-single" class="modal">
+            <input type="hidden" name="id" value="___unset___">
+            <input type="hidden" name="working_dir" value="{{ _working_dir }}">
+
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">{{ delete_item }}</p>
+                    <button class="delete app-modal-close" type="button"></button>
+                </header>
+                <div class="modal-card-body">
+                    <div class="has-text-centered">
+                        <p>{{ current_path }}</p>
+                        <p class="app-current-path has-text-weight-bold has-margin-top-xsmall has-margin-bottom-medium"></p>
+                        <p>{{ are_you_sure_delete_single }}</p>
+                    </div>
+                </div>
+                <footer class="modal-card-foot">
+                    {{ forms.button({'label': yes, 'style': 'primary' }) }}
+                    {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+                </footer>
+            </div>
+        </div>
+    </form>
+
+    <!-- ---------------------------------------------------------------------------------------------------------------
+        Modal | Rename
+    ---------------------------------------------------------------------------------------------------------------- -->
+    <form action="?page={{ _app.page }}&action=rename" method="post">
+        <input type="hidden" name="id" value="___unset___">
+        <input type="hidden" name="working_dir" value="{{ _working_dir }}">
+
+        <div id="app-modal-rename" class="modal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">{{ rename_item }}</p>
+                    <button class="delete app-modal-close" type="button"></button>
+                </header>
+                <div class="modal-card-body">
+                    <div class="has-text-centered">
+                        <p>{{ current_path }}</p>
+                        <p class="app-current-path has-text-weight-bold has-margin-top-xsmall has-margin-bottom-medium"></p>
+                    </div>
+
+                    {{ forms.input_wrapped({
+                        'label': new_name,
+                        'name': 'name',
+                        'type': 'text',
+                        'is_required': true,
+                    }) }}
+                </div>
+                <footer class="modal-card-foot">
+                    {{ forms.button({'label': save, 'style': 'primary' }) }}
+                    {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+                </footer>
+            </div>
+        </div>
+    </form>
+
+    <!-- ---------------------------------------------------------------------------------------------------------------
+        Modal | Permissions
+    ---------------------------------------------------------------------------------------------------------------- -->
+    <form action="?page={{ _app.page }}&action=permissions" method="post">
+        <input type="hidden" name="id" value="___unset___">
+        <input type="hidden" name="working_dir" value="{{ _working_dir }}">
+
+        <div id="app-modal-permissions" class="modal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">{{ file_permissions }}</p>
+                    <button class="delete app-modal-close" type="button"></button>
+                </header>
+                <div class="modal-card-body">
+                    <div class="has-text-centered">
+                        <p>{{ current_path }}</p>
+                        <p class="app-current-path has-text-weight-bold has-margin-top-xsmall has-margin-bottom-medium"></p>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="app-permissions-configurator" class="table is-centered is-striped is-hoverable has-valigned-cells">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>{{ owner }}</th>
+                                    <th>{{ group }}</th>
+                                    <th>{{ others }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>{{ read }}</th>
+                                    <td>
+                                        <input type="checkbox" name="owner_read">
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" name="group_read">
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" name="others_read">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>{{ write }}</th>
+                                    <td>
+                                        <input type="checkbox" name="owner_write">
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" name="group_write">
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" name="others_write">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>{{ execute }}</th>
+                                    <td>
+                                        <input type="checkbox" name="owner_execute">
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" name="group_execute">
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" name="others_execute">
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>{{ numeric_value }}</th>
+                                    <td>
+                                        {{ forms.input_wrapped({
+                                            'name': 'owner',
+                                            'type': 'number',
+                                            'min' : 0,
+                                            'max' : 7,
+                                            'is_required': true,
+                                        }) }}
+                                    </td>
+                                    <td>
+                                        {{ forms.input_wrapped({
+                                            'name': 'group',
+                                            'type': 'number',
+                                            'min' : 0,
+                                            'max' : 7,
+                                            'is_required': true,
+                                        }) }}
+                                    </td>
+                                    <td>
+                                        {{ forms.input_wrapped({
+                                            'name': 'others',
+                                            'type': 'number',
+                                            'min' : 0,
+                                            'max' : 7,
+                                            'is_required': true,
+                                        }) }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <footer class="modal-card-foot">
+                    {{ forms.button({'label': save, 'style': 'primary' }) }}
+                    {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+                </footer>
+            </div>
+        </div>
+    </form>
+
+    <!-- ---------------------------------------------------------------------------------------------------------------
+        Modal | Extract
+    ---------------------------------------------------------------------------------------------------------------- -->
+
+    <form action="?page={{ _app.page }}&action=extract" method="post">
+        <input type="hidden" name="id" value="___unset___">
+        <input type="hidden" name="working_dir" value="{{ _working_dir }}">
+
+        <div id="app-modal-extract" class="modal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">{{ extract_archive }}</p>
+                    <button class="delete app-modal-close" type="button"></button>
+                </header>
+                <div class="modal-card-body">
+                    <div class="has-text-centered">
+                        <p>{{ current_path }}</p>
+                        <p class="app-current-path has-text-weight-bold has-margin-top-xsmall has-margin-bottom-medium"></p>
+                    </div>
+
+                    {{ forms.checkbox_wrapped({
+                        'label': replace_existing_files,
+                        'options': {
+                            'label': yes,
+                            'name': 'is_overwrite',
+                            'value': '1',
+                            'is_checked': false
+                        }
+                    }) }}
+                </div>
+                <footer class="modal-card-foot">
+                    {{ forms.button({'label': extract, 'style': 'primary' }) }}
+                    {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+                </footer>
+            </div>
+        </div>
+    </form>
+
+{% endblock %}

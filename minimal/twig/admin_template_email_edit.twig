@@ -1,0 +1,117 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script>
+        var placeholderTexts = {{ _js_placeholder }};
+    </script>
+
+    <script src="/theme/bulma/assets/js/page_template_email.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    {% include 'includes/card_start.twig' %}
+
+        <form action="?page=admin_template_email_edit" method="post" autocomplete="off">
+            <input type="hidden" name="submit" value="1">
+            <input type="hidden" name="id" value="{{ _id }}">
+            <input type="hidden" name="language" value="{{ _language_value }}">
+            <input type="hidden" name="event" value="{{ _event_value }}">
+
+                {{ forms.input_wrapped({
+                    'label': language,
+                    'value': _language,
+                    'is_disabled': true,
+                }) }}
+
+                {{ forms.input_wrapped({
+                    'label': event,
+                    'value': _event,
+                    'is_disabled': true,
+                }) }}
+
+                <div class="has-margin-bottom-medium">
+                    {{ forms.button({
+                        'label': load_default_template,
+                        'type': 'button',
+                        'id': 'app-btn-load-default-template',
+                        'style': 'primary',
+                    }) }}
+                </div>
+
+                <div id="app-placeholder-wrapper" style="display:none;">
+                    {{ forms.label_wrapped({
+                        'label': placeholders,
+                        'help': '<span id="app-placeholder"></span>',
+                    }) }}
+                </div>
+
+                {{ forms.input_wrapped({
+                    'label': subject,
+                    'name': 'subject',
+                    'type': 'text',
+                    'value': _subject,
+                    'is_required': true,
+                }) }}
+
+                {{ forms.textarea_wrapped({
+                    'label': text,
+                    'name': 'text',
+                    'value': _text,
+                    'is_required': true,
+                    'rows': 15,
+                    'is_auto_resize': true
+                }) }}
+
+                {{ forms.input_wrapped({
+                    'label': sender_name,
+                    'name': 'sender_name',
+                    'type': 'text',
+                    'value': _sender_name,
+                }) }}
+
+                {{ forms.input_wrapped({
+                    'label': send_copy_to,
+                    'help': send_copy_to_help,
+                    'name': 'send_copy_to',
+                    'type': 'text',
+                    'value': _send_copy_to,
+                }) }}
+
+                {{ forms.input_wrapped({
+                    'label': test_email_template,
+                    'help': test_email_template_help,
+                    'name': 'test_recipient',
+                    'type': 'text',
+                    'value': _admin_email,
+                    'addons': {
+                        'right': {
+                            'type': 'action',
+                            'label': send_email,
+                            'action': 'app-send-test-email'
+                        }
+                    },
+                }) }}
+
+                <div id="app-send-test-success" class="has-text-success has-text-weight-bold" style="display: none">
+                    {{ successfully_sent }}
+                </div>
+
+                <div id="app-send-test-error" style="display: none">
+                    <span class="has-text-danger has-text-weight-bold">
+                        {{ failed_to_send }}
+                    </span>
+                    <br>
+                    <span id="app-send-test-error-message"></span>
+                </div>
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': 'admin_template_email_index' }, '_confirm': true } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}

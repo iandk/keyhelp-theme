@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- stop microsoft edge to style numbers, which it assumes are telephone numbers -->
+    <meta name="format-detection" content="telephone=no">
+
+    <!-- favicon -->
+    {% if _whitelabel.favicon %}
+        <link type="image/x-icon" rel="shortcut icon" href="{{ _whitelabel.favicon }}">
+    {% else %}
+        <link rel="apple-touch-icon" sizes="180x180" href="/theme/minimal/assets/img/favicon/apple-touch-icon.png?v=ngk7O7gqA9">
+        <link rel="icon" type="image/png" sizes="32x32" href="/theme/minimal/assets/img/favicon/favicon-32x32.png?v=ngk7O7gqA9">
+        <link rel="icon" type="image/png" sizes="16x16" href="/theme/minimal/assets/img/favicon/favicon-16x16.png?v=ngk7O7gqA9">
+        <link rel="manifest" href="/theme/minimal/assets/img/favicon/site.webmanifest?v=ngk7O7gqA9">
+        <link rel="mask-icon" href="/theme/minimal/assets/img/favicon/safari-pinned-tab.svg?v=ngk7O7gqA9" color="#2b5797">
+        <link rel="shortcut icon" href="/theme/minimal/assets/img/favicon/favicon.ico?v=ngk7O7gqA9">
+        <meta name="apple-mobile-web-app-title" content="KeyHelp">
+        <meta name="application-name" content="KeyHelp">
+        <meta name="msapplication-TileColor" content="#2b5797">
+        <meta name="msapplication-config" content="/theme/minimal/assets/img/favicon/browserconfig.xml?v=ngk7O7gqA9">
+        <meta name="theme-color" content="#ffffff">
+    {% endif %}
+
+    <!-- title -->
+    <title>{{ _app.page_title }}</title>
+
+    <!-- css -->
+    <link rel="stylesheet" href="/theme/minimal/assets/css/style.css?{{ _app.cache_busting }}">
+    <link rel="stylesheet" href="/theme/minimal/assets/vendor/perfect-scrollbar/perfect-scrollbar.min.css?{{ _app.cache_busting }}">
+
+    <!-- page css -->
+    {% block page_css %}
+    {% endblock %}
+
+    <!-- whitelabel css -->
+    {% if _whitelabel.css %}
+        <style>
+            {{ _whitelabel.css|raw }}
+        </style>
+    {% endif %}
+</head>
+
+<body>
+    {% import "macros/macros.twig" as macros %}
+    {% import "macros/forms.twig" as forms %}
+
+    {% block body_content %}
+    {% endblock %}
+
+    <!-- javascript -->
+    <script>
+        var hash = {{ js_hash }};
+    </script>
+
+    <script src="/theme/minimal/assets/vendor/jquery/jquery.min.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/minimal/assets/vendor/perfect-scrollbar/perfect-scrollbar.min.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/minimal/assets/vendor/chartjs/chart.min.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/minimal/assets/vendor/handlebars/handlebars.min.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/minimal/assets/vendor/moment/moment.min.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/minimal/assets/vendor/tippy/popper.min.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/minimal/assets/vendor/tippy/tippy.min.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/minimal/assets/js/functions.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/minimal/assets/js/main.js?{{ _app.cache_busting }}"></script>
+
+    <!-- page javascript -->
+    {% block page_scripts %}
+    {% endblock %}
+
+    <!-- whitelabel javascript -->
+    {% if _whitelabel.javascript %}
+        <script type="text/javascript">
+            {{ _whitelabel.javascript|raw }}
+        </script>
+    {% endif %}
+</body>
+
+</html>

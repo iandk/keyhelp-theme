@@ -1,0 +1,494 @@
+{#======================================================================================================================
+    Buttons
+======================================================================================================================#}
+
+{#
+    Button
+#}
+{% macro button(params) %}
+{% spaceless %}
+
+    {% set class = 'button' %}
+
+    {% if params.style == 'primary' %}
+        {% set class = class ~ ' is-link' %}
+    {% elseif params.style == 'secondary' %}
+        {% set class = class ~ ' is-danger' %}
+    {% elseif params.style == 'grey' %}
+        {% set class = class ~ ' is-dark' %}
+    {% endif %}
+
+    {% if params.class %}
+        {% set class = class ~ ' ' ~ params.class %}
+    {% endif %}
+{% endspaceless %}
+
+    {% if params.url %}
+        <a {{ params.id ? 'id="' ~ params.id ~ '"'}} class="{{ class }}" href="{{ params.url }}" {{ params.is_new_tab ? 'target="_blank" rel="nofollow noopener noreferrer"' }}>
+    {% else %}
+        <button {{ params.id ? 'id="' ~ params.id ~ '"'}} class="{{ class }}" type="{{ params.type|default('submit') }}" {{ params.submit_form ? 'data-submit-form=' ~ params.submit_form }} {{ params.modal ? 'data-open-modal=' ~ params.modal }}>
+    {% endif %}
+
+        {% if params.icon %}
+            <span class="icon is-medium">
+                <i class="{{ params.icon }}"></i>
+            </span>
+            <span>
+        {% endif %}
+
+        {{ params.label }}
+
+        {{ params.icon ? '</span>' -}}
+
+    {{ params.url ? '</a>' : '</button>' }}
+{% endmacro %}
+
+
+{#======================================================================================================================
+    Labels
+======================================================================================================================#}
+
+{#
+    Just a label, without an input etc.
+#}
+{% macro label_wrapped(params) %}
+<div class="field {{ params.has_small_margin ? 'has-margin-bottom-small' : 'has-margin-bottom-medium'}}">
+    {% if params.label %}
+        <label class="label {{ params.help ? 'has-margin-bottom-none' }}">
+            {{ params.label }}
+            {% if params.is_required or params.is_required_fake %}
+                <sup class="has-text-danger">*</sup>
+            {% endif %}
+        </label>
+    {% endif %}
+
+    {% if params.help %}
+        <p class="has-margin-bottom-small has-text-grey">
+            <small>
+                {{ params.help }}
+            </small>
+        </p>
+    {% endif %}
+
+    {% if params.value %}
+        <p class="has-margin-left-small is-italic has-text-weight-bold">
+            {{ params.value }}
+        </p>
+    {% endif %}
+</div>
+{% endmacro %}
+
+
+{#======================================================================================================================
+    Inputs
+======================================================================================================================#}
+{#
+    Input field.
+
+    It is able to handle a lot more than just inputs, for example addons.
+#}
+{% macro input(params) %}
+{% set id = 'input-' ~ params.name %}
+
+    {% if params.addons %}
+        <div class="field has-addons">
+    {% endif %}
+
+    {% if params.addons.left %}
+        {% set isArray = params.addons.left|keys|first is sameas(0) %}
+
+        {% if isArray %}
+            {% for item in params.addons.left %}
+                {{ _self.input_addon(item) }}
+            {% endfor %}
+        {% else %}
+            {{ _self.input_addon(params.addons.left) }}
+        {% endif %}
+    {% endif %}
+
+    <div class="control {{ params.addons ? 'is-expanded' }}">
+        <input
+            {{ not params.is_template ? 'id="' ~ id ~ '"' }}
+            class="input"
+            type="{{ params.type|default('text') }}"
+            name="{{ params.name }}"
+            value="{{ params.value }}"
+            autocapitalize="off"
+            {{ params.placeholder ? 'placeholder="' ~ params.placeholder ~ '"' }}
+            {{ params.max_length ? 'maxlength="' ~ params.max_length ~ '"' }}
+            {{ params.is_required ? 'required' }}
+            {{ params.is_disabled ? 'disabled' }}
+            {{ params.is_autofocus ? 'autofocus' }}
+            {{ params.is_readonly ? 'readonly' }}
+            {{ params.type == 'password' and params.is_new_password ? 'autocomplete="new-password"' }}
+            {# the following can be zero, and would be interpreted as false #}
+            {{ params.min is not null ? 'min="' ~ params.min ~ '"' }}
+            {{ params.max is not null ? 'max="' ~ params.max ~ '"' }}
+            {{ params.step ? 'step="' ~ params.step ~ '"' }}
+        >
+    </div>
+
+    {% if params.addons.right %}
+        {% set isArray = params.addons.right|keys|first is sameas(0) %}
+
+        {% if isArray %}
+            {% for item in params.addons.right %}
+                {{ _self.input_addon(item) }}
+            {% endfor %}
+        {% else %}
+            {{ _self.input_addon(params.addons.right) }}
+        {% endif %}
+    {% endif %}
+
+    {% if params.addons %}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{#
+    Wrapped input fields (label + help + margin).
+
+    It is able to handle a lot more than just inputs, for example addons and checkboxes
+#}
+{% macro input_wrapped(params) %}
+{% set id = 'input-' ~ params.name %}
+
+<div class="field has-margin-bottom-medium">
+    {% if params.label %}
+        <label class="label {{ params.help ? 'has-margin-bottom-none' }}" for="{{ id }}">
+            {{ params.label }}
+            {% if params.is_required or params.is_required_fake %}
+                <sup class="has-text-danger">*</sup>
+            {% endif %}
+        </label>
+    {% endif %}
+
+    {% if params.help %}
+        <p class="has-margin-bottom-small has-text-grey">
+            <small>
+                {{ params.help }}
+                {% if not params.label and ( params.is_required or params.is_required_fake ) %}
+                    <sup class="has-text-danger">*</sup>
+                {% endif %}
+            </small>
+        </p>
+    {% endif %}
+
+    {% if params.checkbox %}
+        <div class="columns">
+            <div class="column">
+    {% endif %}
+
+    {{ _self.input(params) }}
+
+    {% if params.checkbox %}
+        </div>
+        <div class="column is-narrow has-mobile-top-padding-none">
+            <div class="has-margin-bottom-small is-hidden-mobile"></div>
+            {{ _self.checkbox(params.checkbox) }}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+
+{#
+    Used for create the addons html code of a wrapped input.
+#}
+{% macro input_addon(params) %}
+<div class="control">
+    {% if params.type == 'select' %}
+        <div class="select">
+            <select name="{{ params.select.name }}">
+                {% for value, label in params.select.options %}
+                    <option value="{{ value }}" {{ params.select.selected == value ? 'selected' }}>
+                        {{- label -}}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    {% elseif params.type == 'action' %}
+        <a class="button is-link {{ params.action }}">
+            {{ params.label }}
+        </a>
+    {% else %}
+        <a class="button is-static">
+            {{ params.label }}
+        </a>
+    {% endif %}
+</div>
+{% endmacro %}
+
+
+{#======================================================================================================================
+    Selects
+======================================================================================================================#}
+
+{#
+    Select field.
+
+    WARNING: when doing the check for '---', this is TRUE in twig 0 == '---', so we use sameas('---') instead.
+#}
+{% macro select(params) %}
+{% set id = 'input-' ~ params.name %}
+
+<div class="select {{ params.multiple ? 'is-multiple' }} {{ params.is_fullwidth ? 'is-fullwidth' }}">
+    <select id="{{ id }}" name="{{ params.name }}" {{ params.multiple ? 'multiple size="'~ params.multiple ~'"' }}>
+        {% if params.options.groups %}
+            {% if params.options.first %}
+                <option>{{ params.options.first }}</option>
+            {% endif %}
+            {% for group in params.options.groups %}
+                <optgroup label="{{ group.label }}">
+                    {% for value, label in group.items %}
+                        <option value="{{ value }}" {{ params.selected == value ? 'selected' }} {{ value is sameas('---') ? 'disabled' }}>
+                            {{- label -}}
+                        </option>
+                    {% endfor %}
+                </optgroup>
+            {% endfor %}
+        {% else %}
+            {% for value, label in params.options %}
+                <option value="{{ value }}" {{ params.selected == value ? 'selected' }} {{ value is sameas('---') ? 'disabled' }}>
+                    {{- label -}}
+                </option>
+            {% endfor %}
+        {% endif %}
+    </select>
+</div>
+{% endmacro %}
+
+{#
+    Wrapped select field.
+
+    WARNING: when doing the check for '---', this is TRUE in twig 0 == '---', so we use sameas('---') instead.
+#}
+{% macro select_wrapped(params) %}
+{% set id = 'input-' ~ params.name %}
+
+<div class="field has-margin-bottom-medium">
+    {% if params.label %}
+        <label class="label {{ params.help ? 'has-margin-bottom-none' }}" for="{{ id }}">
+            {{ params.label }}
+            {% if params.is_required or params.is_required_fake %}
+                <sup class="has-text-danger">*</sup>
+            {% endif %}
+        </label>
+    {% endif %}
+
+    {% if params.help %}
+        <p class="has-margin-bottom-small has-text-grey">
+            <small>
+                {{ params.help }}
+            </small>
+        </p>
+    {% endif %}
+
+
+    {% if params.button %}
+        <div class="field has-addons">
+    {% endif %}
+
+    <div class="control">
+        {{ _self.select(params) }}
+    </div>
+
+    {% if params.button %}
+            <div class="control">
+                <a id="{{ params.button.id }}" class="button is-link">
+                    {{ params.button.label }}
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+
+{#======================================================================================================================
+    Radio buttons & checkboxes
+======================================================================================================================#}
+
+{#
+    Radio button
+#}
+{% macro radio(params) %}
+{{ _self.checkable(params|merge({'type': 'radio'})) }}
+{% endmacro %}
+
+
+{#
+    Wrapped radio button
+#}
+{% macro radio_wrapped(params) %}
+{{ _self.checkable_wrapped(params|merge({'type': 'radio'})) }}
+{% endmacro %}
+
+
+{#
+    Checkbox
+#}
+{% macro checkbox(params) %}
+{{ _self.checkable(params|merge({'type': 'checkbox'})) }}
+{% endmacro %}
+
+
+{#
+    Wrapped checkbox
+#}
+{% macro checkbox_wrapped(params) %}
+{{ _self.checkable_wrapped(params|merge({'type': 'checkbox'})) }}
+{% endmacro %}
+
+
+{#
+   General macro for radio buttons and checkboxes.
+#}
+{% macro checkable(params) %}
+<div class="field">
+    <div class="control">
+        <label class="{{ params.type }}">
+            <input type="{{ params.type }}" name="{{ params.name }}" value="{{ params.value }}" {{ params.is_checked ? 'checked' }} {{ params.is_required ? 'required' }} {{ params.is_disabled ? 'disabled' }}>
+            {{ params.is_disabled ? '<span class="has-text-grey">' }}
+            {{ params.label }}
+            {{ params.is_disabled ? '</span>' }}
+        </label>
+        {% if params.help %}
+            <p class="has-text-grey has-padding-left-medium">
+                <small>
+                    {{ params.help }}
+                </small>
+            </p>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+
+{#
+    General macro for wrapped radio buttons and checkboxes.
+#}
+{% macro checkable_wrapped(params) %}
+{% set isArray = params.options|keys|first is sameas(0) %}
+
+<div class="field has-margin-bottom-medium">
+    {% if params.label %}
+        <label class="label {{ params.help ? 'has-margin-bottom-none' }}">
+            {{ params.label }}
+            {% if params.is_required or params.is_required_fake %}
+                <sup class="has-text-danger">*</sup>
+            {% endif %}
+        </label>
+    {% endif %}
+
+    {% if params.help %}
+        <p class="has-margin-bottom-small has-text-grey">
+            <small>
+                {{ params.help }}
+            </small>
+        </p>
+    {% endif %}
+
+    {% if isArray %}
+        {% for option in params.options %}
+            {{ _self.checkable(option|merge({'type': params.type, 'is_required': params.is_required or option.is_required })) }}
+        {% endfor %}
+    {% else %}
+        {{ _self.checkable(params.options|merge({'type': params.type, 'is_required': params.is_required or params.options.is_required })) }}
+    {% endif %}
+</div>
+{% endmacro %}
+
+
+{#======================================================================================================================
+    Textareas
+======================================================================================================================#}
+
+{#
+    Wrapped textarea.
+#}
+{%- macro textarea_wrapped(params) -%}
+{% set id = 'input-' ~ params.name %}
+
+<div class="field has-margin-bottom-medium">
+    {% if params.label %}
+        <label class="label {{ params.help ? 'has-margin-bottom-none' }}">
+            {{ params.label }}
+            {% if params.is_required or params.is_required_fake %}
+                <sup class="has-text-danger">*</sup>
+            {% endif %}
+        </label>
+    {% endif %}
+
+    {% if params.help %}
+        <p class="has-margin-bottom-small has-text-grey">
+            <small>
+                {{ params.help }}
+            </small>
+        </p>
+    {% endif %}
+
+    <textarea
+        id="{{ id }}"
+        class="textarea {{ params.is_auto_resize ? 'app-auto-resize' }}"
+        name="{{ params.name }}"
+        placeholder="{{ params.placeholder|default('') }}"
+        autocapitalize="off"
+        {{ params.is_required ? 'required' }}
+        {{ params.is_disabled ? 'disabled' }}
+        {{ params.rows ? 'rows="' ~ params.rows ~ '"' }}
+        >{{ params.value }}</textarea>
+</div>
+{%- endmacro -%}
+
+
+{#======================================================================================================================
+    File uploads
+======================================================================================================================#}
+
+{#
+    Wrapped file uploads.
+#}
+{%- macro upload_wrapped(params) -%}
+<div class="field has-margin-bottom-medium">
+    {% if params.label %}
+        <label class="label {{ params.help ? 'has-margin-bottom-none' }}">
+            {{ params.label }}
+            {% if params.is_required or params.is_required_fake %}
+                <sup class="has-text-danger">*</sup>
+            {% endif %}
+        </label>
+    {% endif %}
+
+    {% if params.help %}
+        <p class="has-margin-bottom-small has-text-grey">
+            <small>
+                {{ params.help }}
+            </small>
+        </p>
+    {% endif %}
+
+    <div class="file is-link has-name">
+        <label class="file-label">
+            <input
+                class="file-input"
+                type="file"
+                name="{{ params.name }}"
+                accept="{{ params.accept ? params.accept }}"
+                {{ params.is_required ? 'required' }}
+                >
+            <span class="file-cta">
+                <span class="file-icon">
+                    <i class="fas fa-upload"></i>
+                </span>
+                <span class="file-label">
+                    {{ params.button_label|default('Choose file...') }}
+                </span>
+            </span>
+            <span class="file-name">
+            </span>
+        </label>
+    </div>
+</div>
+{%- endmacro -%}

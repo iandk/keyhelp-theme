@@ -1,0 +1,180 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-large">
+        {{ help }}
+        <br><br>
+        {% if _show_warning %}
+            <span class="has-text-danger has-text-weight-bold">
+                {{ _warning_message }}
+            </span>
+        {% else %}
+            <strong>{{ messages_in_queue }}:</strong> {{ _messages_in_queue }}
+        {% endif %}
+    </p>
+
+    <!-- button line -->
+    <div class="level">
+        <div class="level-left">
+            <div class="level-item">
+            </div>
+        </div>
+        <div class="level-right">
+            <div class="level-item">
+                {{ forms.button({
+                    'label': delete_all,
+                    'modal': 'app-modal-delete-all',
+                    'style': 'secondary',
+                }) }}
+            </div>
+            <div class="level-item">
+                {{ forms.button({
+                    'label': delete_selected,
+                    'modal': 'app-modal-delete-selection',
+                    'style': 'secondary',
+                }) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- item table -->
+    <div class="card">
+        <div class="card-content">
+
+            {% if _mailqueue_records is empty %}
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+                <form id="form-mailqueue" action="?page={{ _app.page }}&action=delete" method="post">
+                    <input type="hidden" name="delete_selection" value="1">
+
+                    <div class="table-container">
+                        <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" {% include 'includes/table_sorting.twig' with { '_column': 'id' } %}>
+                                        {{ id }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'sender' } %}>
+                                        {{ sender }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'recipient' } %}>
+                                        {{ recipient }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'arrival_data_timestamp' } %}>
+                                        {{ arrival_date }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'age_timestamp' } %}>
+                                        {{ age }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'size' } %}>
+                                        {{ size }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        <label>
+                                            <input class="app-check-all" type="checkbox">
+                                        </label>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in _mailqueue_records %}
+                                    <tr>
+                                        <td>
+                                            {{ item.id }}
+                                        </td>
+                                        <td class="is-narrow">
+                                            <span class="icon is-pulled-right has-text-grey app-tooltip-mandatory" data-tippy-content="{{ item.failed }}">
+                                                <i class="fas fa-info-circle"></i>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {{ item.sender }}
+                                        </td>
+                                        <td>
+                                            {{ item.recipient }}
+                                        </td>
+                                        <td>
+                                            {{ item.arrival_date }}
+                                        </td>
+                                        <td>
+                                            {{ item.age }}
+                                        </td>
+                                        <td class="has-no-wrap">
+                                            {{ item.size }}
+                                        </td>
+                                        <td>
+                                            {{ item.checkbox }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="42" class="has-text-grey-light">
+                                        {{ _mailqueue_records|length }} {{ items_total }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </form>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- pagination -->
+    {% include 'includes/pagination.twig' with { 'params': _pagination } %}
+
+
+    <!-- modal delete all -->
+    <form action="?page={{ _app.page }}&action=delete" method="post">
+        <input type="hidden" name="delete_all" value="1">
+
+        <div id="app-modal-delete-all" class="modal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">{{ delete_all }}</p>
+                    <button class="delete app-modal-close" type="button"></button>
+                </header>
+                <div class="modal-card-body">
+                    <p class="has-text-centered">
+                        {{ are_you_sure_delete_all }}
+                    </p>
+                </div>
+                <footer class="modal-card-foot">
+                    {{ forms.button({'label': yes, 'style': 'primary' }) }}
+                    {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+                </footer>
+            </div>
+        </div>
+    </form>
+
+    <!-- modal delete selection -->
+    <div id="app-modal-delete-selection" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">{{ delete_selected }}</p>
+                <button class="delete app-modal-close" type="button"></button>
+            </header>
+            <div class="modal-card-body">
+                <p class="has-text-centered">
+                    {{ are_you_sure_delete_selection }}
+                </p>
+            </div>
+            <footer class="modal-card-foot">
+                {{ forms.button({'label': yes, 'style': 'primary', 'submit_form': 'form-mailqueue' }) }}
+                {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+            </footer>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,210 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+<script src="/theme/bulma/assets/js/page_scheduled_tasks.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    {% include 'includes/card_start.twig' %}
+
+        <form action="?page=user_scheduled_tasks&action={{ _action }}" method="post" autocomplete="off">
+            <input type="hidden" name="submit" value="1">
+            <input type="hidden" name="id" value="{{ _id }}">
+
+            {{ forms.checkbox_wrapped({
+                'label': is_enabled,
+                'options': {
+                    'label': yes,
+                    'name': 'is_enabled',
+                    'value': '1',
+                    'is_checked': _is_enabled
+                }
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': description,
+                'name': 'description',
+                'type': 'text',
+                'value': _description
+            }) }}
+
+            {{ forms.radio_wrapped({
+                'label': task_type,
+                'options': [
+                    {
+                        'label': execute_command,
+                        'name': 'type',
+                        'value': 'exec',
+                        'is_checked': _type == 'exec',
+                    },
+                    {
+                        'label': call_url,
+                        'name': 'type',
+                        'value': 'http',
+                        'is_checked': _type == 'http',
+                    },
+                    {
+                        'label': execute_php_script,
+                        'name': 'type',
+                        'value': 'php',
+                        'is_checked': _type == 'php',
+                    },
+                ]
+            }) }}
+
+            <div class="app-command-exec">
+                {{ forms.input_wrapped({
+                    'label': command,
+                    'help': use_absolute_paths ~ '<br><b>' ~ _home_directory ~ '</b>',
+                    'name': 'command_exec',
+                    'type': 'text',
+                    'value': _command,
+                    'is_required': true,
+                }) }}
+            </div>
+
+            <div class="app-command-http">
+                {{ forms.input_wrapped({
+                    'label': url,
+                    'help': url_help,
+                    'name': 'command_http',
+                    'type': 'text',
+                    'value': _command,
+                    'is_required': true,
+                }) }}
+            </div>
+
+            <div class="app-command-php">
+                {{ forms.input_wrapped({
+                    'label': php_script_path,
+                    'help': use_absolute_paths ~ '<br><b>' ~ _home_directory ~ '</b>',
+                    'name': 'command_php',
+                    'type': 'text',
+                    'value': _command,
+                    'is_required': true,
+                }) }}
+
+                {{ forms.select_wrapped({
+                    'label': php_interpreter,
+                    'name': 'php_interpreter',
+                    'options': _php_interpreters,
+                    'selected': _php_interpreters_selected
+                }) }}
+            </div>
+
+            {{ forms.label_wrapped({
+                'label': schedule,
+                'help': schedule_help,
+                'is_required': true
+            }) }}
+
+            {{ forms.select_wrapped({
+                'help': select_interval,
+                'name': 'interval',
+                'options': _intervals,
+                'selected': _intervals_selected,
+                'is_required': true
+            }) }}
+
+            <div class="app-schedule-minute">
+                {{ forms.input_wrapped({
+                    'help': at_minute,
+                    'name': 'minute',
+                    'type': 'text',
+                    'value': _minute,
+                    'max_length': 2
+                }) }}
+            </div>
+
+            <div class="app-schedule-day-of-week">
+                {{ forms.select_wrapped({
+                    'help': day_of_week,
+                    'name': 'day_of_week',
+                    'options': _days_of_week,
+                    'selected': _days_of_week_selected
+                }) }}
+            </div>
+
+            <div class="app-schedule-day-of-month">
+                {{ forms.select_wrapped({
+                    'help': day_of_month,
+                    'name': 'day_of_month',
+                    'options': _days_of_month,
+                    'selected': _days_of_month_selected
+                }) }}
+            </div>
+
+            <div class="app-schedule-month">
+                {{ forms.select_wrapped({
+                    'help': month,
+                    'name': 'month',
+                    'options': _months,
+                    'selected': _months_selected
+                }) }}
+            </div>
+
+            <div class="app-schedule-time">
+                {{ forms.input_wrapped({
+                    'help': time_format,
+                    'name': 'time',
+                    'type': 'time',
+                    'value': _time,
+                }) }}
+            </div>
+
+            <div class="app-schedule-cron-style">
+                {{ forms.input_wrapped({
+                    'help': cron_style,
+                    'name': 'cron_style',
+                    'type': 'text',
+                    'value': _cron_style,
+                }) }}
+            </div>
+
+            {{ forms.radio_wrapped({
+                'label': notification,
+                'options': [
+                    {
+                        'label': never,
+                        'name': 'notification',
+                        'value': 'never',
+                        'is_checked': _notification == 'never',
+                    },
+                    {
+                        'label': on_errors,
+                        'help': on_errors_help,
+                        'name': 'notification',
+                        'value': 'error',
+                        'is_checked': _notification == 'error',
+                    },
+                    {
+                        'label': always,
+                        'help': always_help,
+                        'name': 'notification',
+                        'value': 'always',
+                        'is_checked': _notification == 'always',
+                    },
+                ]
+            }) }}
+
+            <div class="app-notification-email">
+                {{ forms.input_wrapped({
+                    'label': email,
+                    'name': 'email',
+                    'type': 'email',
+                    'value': _email,
+                    'is_required': true,
+                }) }}
+            </div>
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': 'user_scheduled_tasks' }, '_confirm': true } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}

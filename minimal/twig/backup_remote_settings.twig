@@ -1,0 +1,202 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script src="/theme/bulma/assets/js/page_backup.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+	{% include 'includes/card_start.twig' %}
+
+        <form action="?page=backup_remote_settings" method="post" autocomplete="off">
+            <input type="hidden" name="submit" value="1">
+
+            {{ forms.input_wrapped({
+                'label': remote_server,
+                'help': remote_server_help,
+                'name': 'host',
+                'type': 'text',
+                'value': _host,
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': port,
+                'help': port_help,
+                'name': 'port',
+                'type': 'number',
+                'value': _port,
+                'min': '0',
+                'max': '65535'
+            }) }}
+
+            {{ forms.select_wrapped({
+                'label': protocol,
+                'name': 'protocol',
+                'options': _protocols,
+                'selected': _protocols_selected,
+            }) }}
+
+            <div id="app-ftp-options">
+                {{ forms.checkbox_wrapped({
+                    'label': ftp_options,
+                    'options': [
+                        {
+                            'label': use_ftps,
+                            'help': use_ftps_help,
+                            'name': 'ftp_use_ftps',
+                            'value': 1,
+                            'is_checked': _ftp_use_ftps
+                        },
+                        {
+                            'label': use_passive_mode,
+                            'help': use_passive_mode_help,
+                            'name': 'ftp_use_passive_mode',
+                            'value': 1,
+                            'is_checked': _ftp_use_passive_mode
+                        },
+                    ]
+                }) }}
+            </div>
+
+            <div id="app-sftp-options">
+                {{ forms.checkbox_wrapped({
+                    'label': sftp_options,
+                    'options': [
+                        {
+                            'label': use_key_pair,
+                            'name': 'sftp_use_key_pair',
+                            'value': 1,
+                            'is_checked': _sftp_use_key_pair
+                        },
+                    ]
+                }) }}
+            </div>
+
+            {{ forms.input_wrapped({
+                'label': directory_on_server,
+                'name': 'directory',
+                'value': _directory,
+                'type': 'text',
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': login_name,
+                'name': 'login',
+                'value': _login,
+                'type': 'text',
+            }) }}
+
+            <div id="app-password">
+                {{ forms.input_wrapped({
+                    'label': password,
+                    'help': password_help,
+                    'name': 'password',
+                    'type': 'password',
+                    'is_new_password': true,
+                }) }}
+            </div>
+
+            <div id="app-key-pair">
+
+                <input type="hidden" name="sftp_private_key" value="">
+
+                {{ forms.label_wrapped({
+                    'label': public_key,
+                    'help': public_key_help
+                }) }}
+
+                <div id="app-show-without-public-key" style="display:none">
+                    {{ forms.label_wrapped({
+                        'help': no_public_key
+                    }) }}
+
+                    {{ forms.button({
+                        'label': create_key_pair,
+                        'style': 'primary',
+                        'id': 'app-create-key-pair',
+                        'type': 'button',
+                    }) }}
+                </div>
+
+                <div id="app-show-with-public-key" style="display:none">
+                    {{ forms.input_wrapped({
+                        'name': 'sftp_public_key',
+                        'value': _sftp_public_key,
+                        'type': 'text',
+                        'is_readonly': true,
+                        'addons': {
+                            'right': {
+                                'type': 'action',
+                                'label': copy,
+                                'action': 'app-copy-to-clipboard'
+                            }
+                        }
+                    }) }}
+
+                    {{ forms.button({
+                        'label': remove_key_pair,
+                        'style': 'secondary',
+                        'id': 'app-remove-key-pair',
+                        'type': 'button',
+                        'class': 'is-small',
+                    }) }}
+                </div>
+            </div>
+
+            <div class="has-text-centered has-margin-top-large has-margin-bottom-xlarge">
+                {{ forms.button({
+                    'label': test_connection,
+                    'style': 'primary',
+                    'icon': 'fas fa-plug',
+                    'id': 'app-test-connection',
+                    'type': 'button'
+                }) }}
+
+                <p id="app-connection-test-success" class="has-margin-top-medium" style="display: none">
+                    <span class="has-text-success has-text-weight-bold">
+                        {{ everything_okay }}
+                    </span>
+                </p>
+                <p id="app-connection-test-error" class="has-margin-top-medium" style="display: none">
+                    <span class="has-text-danger has-text-weight-bold">
+                        {{ an_error_occured }}
+                    </span>
+                    <br>
+                    <span id="app-connection-test-error-message"></span>
+                </p>
+            </div>
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': 'backup_index' }, '_reset': true, '_confirm': true } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+    <!-- modal reset settings -->
+    <form action="?page={{ _app.page }}" method="post">
+        <input type="hidden" name="reset_settings" value="1">
+
+        <div id="app-modal-reset-settings" class="modal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">{{ reset_settings }}</p>
+                    <button class="delete app-modal-close" type="button"></button>
+                </header>
+                <div class="modal-card-body">
+                    <p class="has-text-centered">
+                        {{ reset_settings_confirmation }}
+                    </p>
+                </div>
+                <footer class="modal-card-foot">
+                    {{ forms.button({'label': yes, 'style': 'primary' }) }}
+                    {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+                </footer>
+            </div>
+        </div>
+    </form>
+
+{% endblock %}

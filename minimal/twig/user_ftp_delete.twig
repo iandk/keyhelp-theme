@@ -1,0 +1,28 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    {% include 'includes/delete_page.twig' with {
+        '_action': '?page=user_ftp&action=delete',
+        '_back_page': 'user_ftp',
+        '_config': {
+            'username': {
+                'label': username
+            },
+            'description': {
+                'label': description
+            },
+            'path': {
+                'label': home_directory
+            },
+            'delete_home': {
+                'label': delete_home,
+                'is_checkbox': true
+            },
+        },
+        '_items': _ftp_items
+    } %}
+
+{% endblock %}

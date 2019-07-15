@@ -1,0 +1,41 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    {% for category in settings_navigation %}
+        {% set is_line_beginning = loop.index0 == 0 or loop.index0 % 3 == 0 %}
+        {% set is_line_ending = loop.index0 % 3 == 2 %}
+
+        {% if is_line_beginning %}
+            <div class="columns">
+        {% endif %}
+
+            <div class="column is-4">
+                {% include 'includes/card_start_stacked.twig' with { '_label': category.label, '_icon': category.icon } %}
+
+                    {% for item in category.items %}
+                        {% if not item.hide %}
+                            <div>
+                                <small>
+                                    <span class="icon is-medium has-text-grey-light">
+                                        <i class="fas fa-angle-right"></i>
+                                    </span>
+                                </small>
+                                <a href="{{ item.url }}">
+                                    {{ item.label }}
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+
+                {% include 'includes/card_end_stacked.twig' %}
+            </div>
+
+        {% if is_line_ending %}
+            </div>
+        {% endif %}
+    {% endfor %}
+
+{% endblock %}

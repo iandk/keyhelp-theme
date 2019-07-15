@@ -1,0 +1,7 @@
+{
+    "name": "Minimal Theme",
+    "description": "A minimal version of the default theme.",
+    "author": "Ian Klemm",
+    "version": "0.1",
+    "path_to_templates": "twig\/"
+}

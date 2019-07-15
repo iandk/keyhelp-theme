@@ -1,0 +1,253 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-large">
+        {{ help }}
+    </p>
+
+    <!-- admin only -->
+    {% if _app.area == 'admin' %}
+        <div class="level has-margin-bottom-medium">
+            <div class="level-left">
+            </div>
+            <div class="level-right">
+                <div class="level-item">
+                    {{ forms.button({
+                        'label': secure_server_services,
+                        'style': 'primary',
+                        'modal': 'app-modal-service-certificates'
+                    }) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- modal -->
+        <form action="?page=ssl_certificates" method="post">
+            <input type="hidden" name="submit" value="true">
+
+            <div id="app-modal-service-certificates" class="modal">
+                <div class="modal-background"></div>
+                <div class="modal-card">
+                    <header class="modal-card-head">
+                        <p class="modal-card-title">{{ secure_server_services }}</p>
+                        <button class="delete app-modal-close" type="button"></button>
+                    </header>
+                    <div class="modal-card-body">
+                        {{ forms.select_wrapped({
+                            'label': admin_panel,
+                            'name': 'panel',
+                            'options': _service_certificates,
+                            'selected': _panel_certificate_selected,
+                        }) }}
+                        {{ forms.select_wrapped({
+                            'label': email_server,
+                            'name': 'mail',
+                            'options': _service_certificates,
+                            'selected': _email_certificate_selected,
+                        }) }}
+                        {{ forms.select_wrapped({
+                            'label': ftp_server,
+                            'name': 'ftp',
+                            'options': _service_certificates,
+                            'selected': _ftp_certificate_selected,
+                        }) }}
+                        {{ forms.select_wrapped({
+                            'label': webmail_subdomain,
+                            'name': 'webmail',
+                            'options': _webmail_certificates,
+                            'selected': _webmail_certificate_selected,
+                        }) }}
+                    </div>
+                    <footer class="modal-card-foot">
+                        {{ forms.button({'label': save, 'style': 'primary' }) }}
+                        {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+                    </footer>
+                </div>
+            </div>
+        </form>
+    {% endif %}
+
+    <!-- button line -->
+    {% include 'includes/index_page_button_line.twig' with ({
+        '_add_btn_label': add_certificate,
+        '_add_btn_url': '?page=ssl_certificates&action=add',
+        '_form_id': 'form-certificate-index'
+    }) %}
+
+    <!-- item table -->
+    <div class="card">
+        <div class="card-content">
+
+            {% if _certificate_items is empty %}
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+
+                <form id="form-certificate-index" action="?page=ssl_certificates&action=delete" method="post">
+                    <div class="table-container">
+                        <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" {% include 'includes/table_sorting.twig' with { '_column': 'name' } %}>
+                                        {{ name }}
+                                    </th>
+                                    {% if _app.area == 'admin' %}
+                                        <th {% include 'includes/table_sorting.twig' with { '_column': 'owner' } %}>
+                                            {{ owner }}
+                                        </th>
+                                    {% endif %}
+                                    <th colspan="2" {% include 'includes/table_sorting.twig' with { '_column': 'valid_till_timestamp' } %}>
+                                        {{ valid_till }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'used_sorting' } %}>
+                                        {{ in_use }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'issuer' } %}>
+                                        {{ issuer }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        {{ options }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        <label>
+                                            <input class="app-check-all" type="checkbox">
+                                        </label>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in _certificate_items %}
+                                    <tr>
+                                        <td>
+                                            {{ item.name }}
+                                        </td>
+                                        <td class="is-narrow">
+                                            {% set additional_certificate_info %}
+                                                <div class="has-margin-top-medium has-margin-bottom-small">
+                                                    <h6 class="title is-6">{{ certificate_components }}</h6>
+
+                                                    <table class="table is-narrow">
+                                                        <tr>
+                                                            <th>{{ private_key }}</th>
+                                                            <td>{{ macros.true_false_indicator(item.has_key) }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>{{ csr_long }}</th>
+                                                            <td>{{ macros.true_false_indicator(item.has_key) }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>{{ certificate }}</th>
+                                                            <td>{{ macros.true_false_indicator(item.has_cert) }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>{{ ca_certificate }}</th>
+                                                            <td>{{ macros.true_false_indicator(item.has_ca_cert) }}</td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            {% endset %}
+                                            <div class="app-tooltip-mandatory" data-tippy-content="{{ additional_certificate_info|e }}">
+                                                <span class="icon is-medium has-text-grey">
+                                                    <i class="fas fa-info-circle"></i>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        {% if _app.area == 'admin' %}
+                                            <td>
+                                                {% if item.owner %}
+                                                    {{ item.owner }}
+                                                {% else %}
+                                                    <span class="has-text-grey">
+                                                        &#x2014;
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                        {% endif %}
+                                        <td class="has-no-wrap is-narrow">
+                                            {{ item.valid_till ? item.valid_till : '&#x2014;' }}
+                                        </td>
+                                        <td class="is-narrow">
+                                            {% if item.is_expired %}
+                                                <div class="app-tooltip" data-tippy-content="{{ expired }}">
+                                                    <span class="icon is-medium has-text-danger">
+                                                        <i class="fas fa-clock"></i>
+                                                    </span>
+                                                </div>
+                                            {% elseif item.is_expiring_soon %}
+                                                <div class="app-tooltip" data-tippy-content="{{ expires_soon }}">
+                                                    <span class="icon is-medium has-text-warning">
+                                                        <i class="fas fa-clock"></i>
+                                                    </span>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if item.used_times %}
+                                                {{ item.used_times }}x
+                                            {% else %}
+                                                <span class="has-text-grey">
+                                                    &#x2014;
+                                                </span>
+                                            {% endif %}
+                                            {% if item.is_used_for_service %}
+                                                <span class="has-text-grey-light has-margin-left-xsmall has-margin-right-xsmall">
+                                                    /
+                                                </span>
+                                                <span class="icon is-small app-tooltip" data-tippy-content="{{ tooltip_used_for_service }}">
+                                                    <i class="fas fa-shield-alt"></i>
+                                                </span>
+                                            {% endif %}
+
+                                        </td>
+                                        <td>
+                                            {% if item.issuer %}
+                                                {{ item.issuer }}
+                                            {% else %}
+                                                <span class="has-text-grey">
+                                                    &#x2014;
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="is-narrow">
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'edit',
+                                                '_url': '?page=ssl_certificates&action=edit&id=' ~ item.id
+                                            } %}
+
+                                            {% if not item.is_used_for_service %}
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'delete',
+                                                    '_url': '?page=ssl_certificates&action=delete&id=' ~ item.id
+                                                } %}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if not item.is_used_for_service %}
+                                                {{ item.checkbox }}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="42" class="has-text-grey-light">
+                                        {{ _certificate_items|length }} {{ items_total }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </form>
+
+            {% endif %}
+
+        </div>
+    </div>
+
+{% endblock %}

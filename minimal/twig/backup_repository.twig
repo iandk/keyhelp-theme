@@ -1,0 +1,138 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    <!-- button line -->
+    <div class="level">
+        <div class="level-left">
+            <div class="level-item">
+                <strong>{{ view }}</strong>
+            </div>
+            <div class="level-item">
+                <div class="buttons">
+                    {{ forms.button({
+                        'label': local,
+                        'icon': 'fas fa-server',
+                        'style': _repository == 'local' ? 'primary' : '',
+                        'url': '?page=backup_repository&repository=local'
+                    }) }}
+                    {{ forms.button({
+                        'label': remote,
+                        'icon': 'fas fa-globe',
+                        'style': _repository == 'remote' ? 'primary' : '',
+                        'url': '?page=backup_repository&repository=remote'
+                    }) }}
+                </div>
+            </div>
+        </div>
+        <div class="level-right">
+            <div class="level-item">
+                {{ forms.button({
+                    'label': delete_selected,
+                    'modal': 'app-modal-delete-selection',
+                    'style': 'secondary',
+                }) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- item table -->
+    <div class="card">
+        <div class="card-content">
+
+            {% if _files is empty %}
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+                <div class="table-container">
+                    <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                        <thead>
+                            <tr>
+                                <th>
+                                    {{ creation_date }}
+                                </th>
+                                <th colspan="2">
+                                    {{ filename }}
+                                </th>
+                                <th class="is-narrow has-no-wrap">
+                                    {{ size }}
+                                </th>
+                                <th class="is-narrow">
+                                    <label>
+                                        <input class="app-check-all" type="checkbox">
+                                    </label>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <form id="form-files" action="?page=backup_repository&repository={{ _repository }}" method="post">
+                                {% for item in _files %}
+                                    <tr>
+                                        <td class="has-no-wrap">
+                                            {{ item.date }}
+                                        </td>
+                                        <td>
+                                            <span class="icon is-medium">
+                                                <i class="far fa-file-archive"></i>
+                                            </span>
+                                            {{ item.filename }}
+                                        </td>
+                                        <td class="is-narrow">
+                                            {% if _repository == 'local' %}
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'download',
+                                                    '_url': '?page=backup_repository&repository=local&download=' ~ item.filename,
+                                                } %}
+                                            {% endif %}
+                                        </td>
+                                        <td class="has-no-wrap">
+                                            {{ item.size }}
+                                        </td>
+                                        <td>
+                                            {{ item.checkbox }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </form>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="42" class="has-text-grey-light">
+                                    {{ _files|length }} {{ items }} | {{ total_size }}: {{ _total_size }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- back to overview -->
+    {% include 'includes/cta.twig' with { '_back': { 'target': 'backup_index' } } %}
+
+    <!-- modal delete selection -->
+    <div id="app-modal-delete-selection" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">{{ delete_selected }}</p>
+                <button class="delete app-modal-close" type="button"></button>
+            </header>
+            <div class="modal-card-body">
+                <p class="has-text-centered">
+                    {{ are_you_sure_to_delete }}
+                </p>
+            </div>
+            <footer class="modal-card-foot">
+                {{ forms.button({'label': yes, 'style': 'primary', 'submit_form': 'form-files' }) }}
+                {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+            </footer>
+        </div>
+    </div>
+
+{% endblock %}

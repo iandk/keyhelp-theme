@@ -1,0 +1,22 @@
+<nav id="main-nav" class="menu has-margin-left-xsmall">
+    {% for category in navigation %}
+        <p class="menu-label">
+            <span class="icon is-medium">
+                <i class="{{ category.icon }}"></i>
+            </span>
+            {{ category.label }}
+        </p>
+        <ul class="menu-list">
+        {% for item in category.items %}
+            <li>
+                <a href="{{ item.url }}" {{ item.extern ? 'target="_blank" rel="nofollow noopener noreferrer"' }} {{ item.is_active ? 'class="is-active"' }}>
+                    <span class="icon is-small">
+                        <i class="fas fa-angle-right"></i>
+                    </span>
+                    {{ item.label }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+</nav>

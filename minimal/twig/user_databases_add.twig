@@ -1,0 +1,86 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script src="/theme/bulma/assets/js/page_database.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    {% include 'includes/card_start.twig' %}
+
+        <form action="?page=user_databases&action=add" method="post" autocomplete="off">
+            <input type="hidden" name="submit" value="1">
+
+            {{ forms.input_wrapped({
+                'label': database_name,
+                'name': 'database_name',
+                'type': 'text',
+
+                'value': _has_custom_names ? _database_name : autofill,
+                'is_required': _has_custom_names ? true : false,
+                'is_disabled': _has_custom_names ? false : true,
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': username,
+                'name': 'database_username',
+                'type': 'text',
+                'value': _has_custom_names ? _database_username : autofill,
+                'is_required': _has_custom_names ? true : false,
+                'is_disabled': _has_custom_names ? false : true,
+            }) }}
+
+            {{ forms.input_wrapped({
+                'name': 'description',
+                'type': 'text',
+                'label': description,
+                'value': _description,
+            }) }}
+
+            {% include 'includes/form_password.twig' %}
+
+            {% if _has_remote_access %}
+                {{ forms.radio_wrapped({
+                    'label': remote_access,
+                    'options': [
+                        {
+                            'label': local_access_only,
+                            'name': 'remote_access',
+                            'value': 'local',
+                            'is_checked': _remote_access == 'local',
+                        },
+                        {
+                            'label': remote_access_any,
+                            'name': 'remote_access',
+                            'value': 'any',
+                            'is_checked': _remote_access == 'any',
+                        },
+                        {
+                            'label': remote_access_custom,
+                            'name': 'remote_access',
+                            'value': 'custom',
+                            'is_checked': _remote_access == 'custom',
+                        },
+                    ]
+                }) }}
+
+                <div class="app-show-with-remote-access-custom" style="display: none;">
+                    {{ forms.textarea_wrapped({
+                        'name': 'remote_access_custom',
+                        'value': _remote_access_custom,
+                        'help': remote_access_custom_desc,
+                        'is_auto_resize': true
+                    }) }}
+                </div>
+            {% endif %}
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': 'user_databases' }, '_confirm': true } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}

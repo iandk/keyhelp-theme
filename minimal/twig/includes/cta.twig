@@ -1,0 +1,39 @@
+<div class="has-margin-top-large">
+    <div class="columns">
+        {% if _back %}
+            <div class="column has-text-centered">
+                {{ forms.button({
+                    'label': _back.label | default(back),
+                    'style': 'secondary',
+                    'url': 'index.php?page=' ~ _back.target
+                }) }}
+            </div>
+        {% endif %}
+        {% if _reset %}
+            <div class="column has-text-centered">
+                {{ forms.button({
+                    'label': _reset.label | default(reset_settings),
+                    'modal': _reset.modal | default('app-modal-reset-settings'),
+                    'type': 'button'
+                }) }}
+            </div>
+        {% endif %}
+        {% if _misc %}
+            <div class="column has-text-centered">
+                {{ forms.button({
+                    'label': _misc.label,
+                    'id': _misc.id,
+                    'type': 'button'
+                }) }}
+            </div>
+        {% endif %}
+        {% if _confirm %}
+            <div class="column has-text-centered">
+                {{ forms.button({
+                    'label': _confirm.label | default(save),
+                    'style': 'primary',
+                }) }}
+            </div>
+        {% endif %}
+    </div>
+</div>

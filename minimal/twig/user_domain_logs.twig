@@ -1,0 +1,257 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script id="app-log-entry-template" type="text/x-handlebars-template">
+		{% verbatim %}
+            <tr>
+                <td class="has-no-wrap">
+                    {{ date }}
+                </td>
+                <td class="has-no-wrap">
+                    {{ ip }}
+                </td>
+                <td>
+                    {{#if user_agent }}
+                        <span class="icon has-text-grey app-tooltip-mandatory" data-tippy-content="<b>{% endverbatim %}{{ user_agent }}{% verbatim %}</b><br>{{ user_agent }}">
+                            <i class="fas fa-user-tie"></i>
+                        </span>
+                    {{/if}}
+                </td>
+                <td>
+                    {{#if referer }}
+                        <span class="icon has-text-grey app-tooltip-mandatory" data-tippy-content="<b>{% endverbatim %}{{ referer }}{% verbatim %}</b><br>{{ referer }}">
+                            <i class="fas fa-link"></i>
+                        </span>
+                    {{/if}}
+                </td>
+                <td {{#if is_error }}class="has-text-danger"{{/ if }}>
+                    {{ status_code }}
+                </td>
+                <td {{#if is_error }}class="has-text-danger"{{/ if }}>
+                    {{ nl2br message }}
+                </td>
+            </tr>
+		{% endverbatim %}
+    </script>
+
+    <script src="/theme/bulma/assets/js/page_domain_logs.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-large">
+        {{ web_server_logs_help }}
+        {{ web_server_logs_download_help }}
+
+        {% if (log_files.access.items is not empty) or (log_files.error.items is not empty) %}
+            <br><br>
+            {{ forms.button({
+                'label': go_to_download,
+                'style': 'primary',
+                'icon': 'fas fa-angle-double-down',
+                'class': 'is-outlined',
+                'url': '#anchor_download'
+            }) }}
+        {% endif %}
+    </p>
+
+
+    <!-- view options -->
+    <form action="?page={{ _app.page }}" method="post">
+        <input type="hidden" name="update_view" value="1">
+
+        <div class="card has-margin-bottom-medium">
+            <div class="card-content">
+                <div class="level">
+                    <div class="level-left">
+                        <div class="level-item">
+                            <strong>{{ view_options }}</strong>
+                        </div>
+                    </div>
+                    <div class="level-right">
+                        <div class="level-item">
+                            <label>
+                                <input type="checkbox" name="is_show_access_log" value="1" checked> {{ access_logs }}
+                            </label>
+                        </div>
+                        <div class="level-item">
+                            <label>
+                                <input type="checkbox" name="is_show_error_log" value="1" checked> {{ error_logs }}
+                            </label>
+                        </div>
+                        <div class="level-item is-hidden-mobile has-margin-right-large">
+                            <!-- spacer on non-mobile -->
+                        </div>
+                        <div class="level-item app-group-real-time-disabled">
+                            {{ forms.button({
+                                'label': start_real_time_monitoring,
+                                'style': 'grey',
+                                'icon': 'fas fa-play',
+                                'class': 'app-button-start-real-time',
+                                'type': 'button'
+                            }) }}
+                        </div>
+                        <div class="level-item app-group-real-time-disabled">
+                            {{ forms.button({
+                                'label': refresh,
+                                'style': 'grey',
+                                'icon': 'fas fa-sync-alt',
+                                'class': 'app-button-refresh',
+                                'type': 'button'
+                            }) }}
+                        </div>
+                        <div class="level-item app-group-real-time-enabled" style="display: none">
+                            {{ forms.button({
+                                'label': stop_real_time_monitoring,
+                                'style': 'grey',
+                                'icon': 'fas fa-stop',
+                                'class': 'app-button-stop-real-time',
+                                'type': 'button'
+                            }) }}
+                        </div>
+                        <div class="level-item app-group-real-time-enabled" style="display: none">
+                            {{ forms.button({
+                                'label': clear_list,
+                                'style': 'grey',
+                                'icon': 'fas fa-trash',
+                                'class': 'app-button-clear',
+                                'type': 'button'
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+
+    <!-- log entry table -->
+    <div class="card has-margin-bottom-medium">
+        <div class="card-content">
+
+            <div id="app-log-empty">
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            </div>
+
+            <div id="app-log-content-container" style="display: none">
+
+                <div class="table-container">
+                    <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells is-narrow">
+                        <thead>
+                            <tr>
+                                <th class="is-narrow">
+                                    {{ date }}
+                                </th>
+                                <th colspan="3" class="is-narrow">
+                                    {{ client_ip }}
+                                </th>
+                                <th class="is-narrow">
+                                    {{ http_code }}
+                                </th>
+                                <th>
+                                    {{ message }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="app-log-content">
+
+                            <!-- added by javascript -->
+
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- back -->
+    {% include 'includes/cta.twig' with { '_back': { 'target': 'domains' } } %}
+
+
+    <!-- download table -->
+    {% if (log_files.access.items is not empty) or (log_files.error.items is not empty) %}
+        <div id="anchor_download" class="columns has-margin-top-xlarge">
+
+            {% for type, log_file in log_files %}
+                {% set _card_label = type == 'access' ? download_access_logs : download_error_logs %}
+
+                <div class="column">
+                    {% include 'includes/card_start_stacked.twig' with { '_label': _card_label, '_icon': 'fas fa-download' } %}
+
+                    {% if log_file.items is empty %}
+                        <div class="has-text-centered has-text-grey">
+                            - {{ no_items_available }} -
+                        </div>
+                    {% else %}
+                        <div class="table-container">
+                            <table class="table is-fullwidth is-striped is-hoverable">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            {{ filename }}
+                                        </th>
+                                        <th>
+                                            {{ modification_date }}
+                                        </th>
+                                        <th class="is-narrow">
+                                            {{ size }}
+                                        </th>
+
+                                        <th class="is-narrow">
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in log_file.items %}
+                                    <tr>
+                                        <td>
+                                            {{ item.filename }}
+                                        </td>
+                                        <td class="has-no-wrap">
+                                            {{ item.modified }}
+                                        </td>
+                                        <td class="has-no-wrap">
+                                            {{ item.size }}
+                                        </td>
+                                        <td>
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'download',
+                                                '_url': item.download
+                                            } %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td colspan="42" class="has-text-grey-light">
+                                        {{ log_file.items|length }} {{ items_total }}
+                                    </td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    {% endif %}
+
+                    {% include 'includes/card_end_stacked.twig' %}
+                </div>
+            {% endfor %}
+
+        </div>
+
+        <!-- back -->
+        {% include 'includes/cta.twig' with { '_back': { 'target': 'domains' } } %}
+
+    {% endif %}
+
+{% endblock %}

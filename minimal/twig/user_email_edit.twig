@@ -1,0 +1,232 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script>
+        var aliases = {{ _aliases_json }};
+        var idEmailDomain = '{{ _id_email_domain }}';
+    </script>
+
+	<script id="app-add-alias-template" type="text/x-handlebars-template">
+        <div class="columns">
+            <div class="column" style="padding-bottom: 0px;">
+                {{ forms.input_wrapped({
+                    'is_template': true,
+                    'type': 'text',
+                    'addons': {
+                        'right': [
+                            {
+                                'label': '@'
+                            },
+                            {
+                                'type': 'select',
+                                'select': {
+                                    'name': 'alias_email_domain_id[]',
+                                    'options': _email_domain_options,
+                                }
+                            },
+                        ]
+                    }
+                }) }}
+            </div>
+            <div class="column is-narrow has-mobile-top-padding-none has-text-centered">
+                {{ forms.button({
+                    'label': remove,
+                    'style': 'secondary',
+                    'type': 'button',
+                    'class': 'app-btn-remove-alias'
+                }) }}
+            </div>
+        </div>
+	</script>
+
+    <script src="/theme/bulma/assets/js/page_email.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    {% include 'includes/card_start.twig' %}
+        <form action="?page=user_email&action={{ _action }}" method="post" autocomplete="off">
+            <input type="hidden" name="submit" value="1">
+            <input type="hidden" name="id" value="{{ _id }}">
+            <input type="hidden" name="aliases" value="">
+
+            <div class="tabs is-centered">
+                <ul>
+                    <li class="is-active">
+                        <a href="#tab-general">{{ general }}</a>
+                    </li>
+                    <li>
+                        <a href="#tab-aliases">{{ alias_addresses }}</a>
+                    </li>
+                    <li>
+                        <a href="#tab-forwardings">{{ forwarding }}</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="tabs-content">
+                <div id="tab-general" class="tabs-panel is-active">
+
+                    {% if _action == 'add' %}
+                        {{ forms.input_wrapped({
+                            'label': email,
+                            'name': 'email_name',
+                            'type': 'text',
+                            'is_required': true,
+                            'value': _email_name,
+                            'addons': {
+                                'right': [
+                                    {
+                                        'label': '@'
+                                    },
+                                    {
+                                        'type': 'select',
+                                        'select': {
+                                            'name': 'email_domain_id',
+                                            'options': _email_domain_options,
+                                            'selected': _email_domain_options_selected,
+                                        }
+                                    },
+                                ]
+                            }
+                        }) }}
+                    {% else %}
+                        {{ forms.input_wrapped({
+                            'label': email,
+                            'value': _email,
+                            'is_disabled': true,
+                        }) }}
+                    {% endif %}
+
+                    {{ forms.input_wrapped({
+                        'label': description,
+                        'name': 'description',
+                        'type': 'text',
+                        'value': _description,
+                    }) }}
+
+                    {% include 'includes/form_password.twig' with { '_leave_empty': _action == 'edit' } %}
+
+                    {{ forms.input_wrapped({
+                        'label': mailbox_size,
+                        'name': 'max_mailbox_size',
+                        'type': 'number',
+                        'value': _max_mailbox_size,
+                        'min': 1,
+                        'is_required': true,
+                        'addons': {
+                            'left': {
+                                'type': 'select',
+                                'select': {
+                                    'name': 'max_mailbox_size_multiplier',
+                                    'options': _max_mailbox_size_multiplier_options,
+                                    'selected': _max_mailbox_size_multiplier_selected,
+                                }
+                            },
+                        }
+                    }) }}
+
+                    {{ forms.checkbox_wrapped({
+                        'label': catch_all,
+                        'help': catch_all_help,
+                        'options': {
+                            'label': enabled,
+                            'name': 'is_catch_all',
+                            'value': '1',
+                            'is_checked': _is_catch_all
+                        }
+                    }) }}
+
+                    <div id="app-show-without-catchall" style="display: none">
+                        {{ forms.checkbox_wrapped({
+                            'label': protections,
+                            'options': [
+                                {
+                                    'label': check_for_virus,
+                                    'help': check_for_virus_help,
+                                    'name': 'is_check_for_virus',
+                                    'value': '1',
+                                    'is_checked': _is_check_for_virus
+                                },
+                                {
+                                    'label': check_for_spam,
+                                    'help': check_for_spam_help,
+                                    'name': 'is_check_for_spam',
+                                    'value': '1',
+                                    'is_checked': _is_check_for_spam
+                                }
+                            ]
+                        }) }}
+
+                        <div id="app-show-with-check-spam" style="display: none">
+                            {{ forms.input_wrapped({
+                                'label': spam_score,
+                                'help': spam_score_help,
+                                'name': 'spam_score',
+                                'type': 'number',
+                                'value': _spam_score,
+                                'min': 0,
+                                'step': 0.1,
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-aliases" class="tabs-panel">
+                    <p class="has-margin-bottom-medium">
+                        {{ alias_addresses_intro }}
+                    </p>
+
+                    <div class="has-text-centered has-margin-bottom-large">
+                        {{ forms.button({
+                            'label': add_alias,
+                            'type': 'button',
+                            'id': 'app-btn-add-alias'
+                        }) }}
+                    </div>
+
+                    <div id="app-add-alias-container"></div>
+                </div>
+
+                <div id="tab-forwardings" class="tabs-panel">
+
+                    <p class="has-margin-bottom-large">
+                        {{ forwarding_intro }}
+                    </p>
+
+                    {{ forms.checkbox_wrapped({
+                        'label': store_forwarded_emails,
+                        'options': {
+                            'label': enabled,
+                            'name': 'is_store_forwarded_emails',
+                            'value': '1',
+                            'is_checked': _is_store_forwarded_emails
+                        }
+                    }) }}
+
+                    {{ forms.textarea_wrapped({
+                        'label': forwarding,
+                        'help': forwarding_help,
+                        'name': 'forwardings',
+                        'value': _forwardings,
+                        'rows': 3,
+                        'is_auto_resize': true
+                    }) }}
+
+                     {{ forms.label_wrapped({
+                        'help': spf_whitelist,
+                    }) }}
+
+                </div>
+            </div>
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': 'user_email' }, '_confirm': true } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}

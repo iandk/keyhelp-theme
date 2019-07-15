@@ -1,0 +1,25 @@
+{% extends 'base/intern.twig' %}
+
+
+
+
+{% block content %}
+
+    {% include 'includes/card_start.twig' %}
+
+        <form action="?page={{ _app.page }}&action=add" method="post" autocomplete="off">
+            {{ forms.select_wrapped({
+                'label': owner,
+                'help': owner_help,
+                'name': 'id_owner',
+                'options': _owner_ids,
+                'selected': _owner_ids_selected,
+                'is_required': true,
+            }) }}
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': 'domains' }, '_confirm': { 'label': continue } } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}

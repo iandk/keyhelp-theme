@@ -1,0 +1,8 @@
+Version:    2.23.0
+
+Releases:   https://github.com/moment/moment/releases
+
+Homepage:   https://momentjs.com/
+
+Notes:      Use the "/moment-x.xx.x/min/moment-with-locales.min.js"
+            located in the release archive and rename it to moment.min.js

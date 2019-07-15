@@ -1,0 +1,31 @@
+{% spaceless %}
+
+    {% if _type == 'folder' or _type == 'dir' %}
+        {% set class = 'fas fa-folder' %}
+    {% elseif _type == 'image' %}
+        {% set class = 'far fa-file-image' %}
+    {% elseif _type == 'audio' %}
+        {% set class = 'far fa-file-audio' %}
+    {% elseif _type == 'archive' %}
+        {% set class = 'far fa-file-archive' %}
+    {% elseif _type == 'code' %}
+        {% set class = 'far fa-file-code' %}
+    {% elseif _type == 'pdf' %}
+        {% set class = 'far fa-file-pdf' %}
+    {% elseif _type == 'text' %}
+        {% set class = 'far fa-file-alt' %}
+    {% elseif _type == 'video' %}
+        {% set class = 'far fa-file-video' %}
+    {% elseif _type == 'link' %}
+        {% set class = 'fas fa-link' %}
+    {% elseif _type == 'folder_up' %}
+        {% set class = 'fas fa-level-up-alt' %}
+    {% else %}
+        {% set class = 'far fa-file' %}
+    {% endif %}
+
+    <span class="icon is-medium">
+        <i class="{{ class }} fa-lg"></i>
+    </span>
+        
+{% endspaceless %}

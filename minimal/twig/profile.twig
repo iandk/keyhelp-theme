@@ -1,0 +1,206 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script src="/theme/bulma/assets/js/page_profile.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    {% include 'includes/card_start.twig' %}
+
+        <form action="?page=profile" method="post" autocomplete="off">
+            <input type="hidden" name="submit" value="1">
+
+            <div class="tabs is-centered">
+                <ul>
+                    <li class="is-active">
+                        <a href="#tab-account">{{ account_settings }}</a>
+                    </li>
+                    {% if _is_client %}
+                        <li>
+                            <a href="#tab-contact">{{ contact_data }}</a>
+                        </li>
+                    {% endif %}
+                    <li>
+                        <a href="#tab-security">{{ security }}</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="tabs-content">
+
+                <div id="tab-account" class="tabs-panel is-active">
+                    {{ forms.select_wrapped({
+                        'name': 'interface_language',
+                        'label': language,
+                        'options': _language_items,
+                        'selected': _language_items_selected,
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'name': 'email',
+                        'type': 'email',
+                        'label': email,
+                        'is_required': true,
+                        'value': _email
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'name': 'current_password',
+                        'type': 'password',
+                        'help': leave_empty,
+                        'label': current_password,
+                        'addons': {
+                            'right': {
+                                'type': 'action',
+                                'label': show,
+                                'action': 'app-show-password'
+                            }
+                        }
+                    }) }}
+
+                    {% include 'includes/form_password.twig' with { '_leave_empty': true } %}
+                </div>
+
+                <div id="tab-contact" class="tabs-panel">
+                    {{ forms.input_wrapped({
+                        'name': 'first_name',
+                        'type': 'text',
+                        'label': first_name,
+                        'is_disabled': not _can_change_contact_data,
+                        'value': _first_name
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'name': 'last_name',
+                        'type': 'text',
+                        'label': last_name,
+                        'is_disabled': not _can_change_contact_data,
+                        'value': _last_name
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'name': 'company',
+                        'type': 'text',
+                        'label': company,
+                        'is_disabled': not _can_change_contact_data,
+                        'value': _company
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'name': 'telephone',
+                        'type': 'tel',
+                        'label': telephone,
+                        'is_disabled': not _can_change_contact_data,
+                        'value': _telephone
+                    }) }}
+
+                    {{ forms.textarea_wrapped({
+                        'name': 'address',
+                        'label': address,
+                        'is_disabled': not _can_change_contact_data,
+                        'value': _address,
+                        'is_auto_resize': true
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'name': 'zip',
+                        'type': 'text',
+                        'label': zip,
+                        'is_disabled': not _can_change_contact_data,
+                        'value': _zip
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'name': 'city',
+                        'type': 'text',
+                        'label': city,
+                        'is_disabled': not _can_change_contact_data,
+                        'value': _city
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'name': 'client_id',
+                        'type': 'text',
+                        'label': client_id,
+                        'is_disabled': true,
+                        'value': _client_id
+                    }) }}
+                </div>
+
+                <div id="tab-security" class="tabs-panel">
+
+                    <input type="hidden" name="two_factor_is_loaded" value="{{ _two_factor_is_loaded }}">
+                    <input type="hidden" name="two_factor_secret" value="{{ _two_factor_secret }}">
+
+                    {{ forms.checkbox_wrapped({
+                        'label': two_factor_auth,
+                        'help': two_factor_auth_help,
+                        'options': {
+                            'label': enabled,
+                            'name': 'two_factor_is_enabled',
+                            'value': '1',
+                            'is_checked': _two_factor_is_enabled
+                        }
+                    }) }}
+
+                    <div id="app-two-factor-method" style="display: none;">
+                        {{ forms.label_wrapped({
+                            'label': auth_method ~ ': ' ~ authentication_app,
+                            'help': authentication_app_help ~ '<br>' ~
+                                    '<b>' ~ attention ~ '!</b> ' ~ authentication_app_backup,
+                        }) }}
+
+                        <div id="app-two-factor-new-app" class="has-text-centered" style="display: none;">
+                            {{ forms.button({
+                                'label': setup_new_app,
+                                'icon': 'fas fa-mobile-alt',
+                                'type': 'button',
+                                'class': 'has-margin-bottom-medium'
+                            }) }}
+                        </div>
+                    </div>
+
+                    <div id="app-two-factor-app-setup" style="display: none;">
+                        {{ forms.label_wrapped({
+                            'label': setup_authentication_app,
+                            'help': setup_authentication_app_help
+                        }) }}
+
+                        <div class="columns has-text-centered has-margin-bottom-xsmall">
+                            <div class="column">
+                                <p>{{ scan_qr_code }}</p>
+                                <img class="has-margin-top-medium" src="{{ _two_factor_qr_code }}">
+                            </div>
+                            <div class="column">
+                                <p>{{ enter_key }}</p>
+                                <p class="has-margin-top-medium has-text-weight-bold">
+                                    {{ _two_factor_secret|chunk_split(4, ' ') }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="app-two-factor-auth-code" style="display: none;">
+                        {{ forms.input_wrapped({
+                            'label': auth_code,
+                            'help': auth_code_help,
+                            'name': 'two_factor_auth_code',
+                            'type': 'text',
+                            'is_required_fake': true
+                        }) }}
+                    </div>
+                </div>
+            </div>
+
+            {% include 'includes/cta.twig' with { '_confirm': true } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}
+

@@ -1,0 +1,164 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script src="/theme/bulma/assets/js/page_traffic.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-medium">
+        {{ help }}
+    </p>
+
+    <p class="has-margin-bottom-medium">
+        {{ last_update }}: {{ _last_update }}
+    </p>
+
+    <div class="has-margin-bottom-large">
+        <form action="?page=admin_traffic" method="post">
+            {{ forms.select_wrapped({
+                'label': select_timeframe,
+                'name': 'timeframe',
+                'options': _timeframe_options,
+                'selected': _timeframe_options_selected,
+            }) }}
+        </form>
+    </div>
+
+    <!-- item table -->
+    <div class="card">
+        <div class="card-content">
+
+            {% if _traffic_items is empty %}
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+
+                <div class="table-container">
+                    <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                        <thead>
+                            <tr>
+                                <th colspan="2" {% include 'includes/table_sorting.twig' with { '_column': 'username' } %}>
+                                    {{ username }}
+                                </th>
+                                <th {% include 'includes/table_sorting.twig' with { '_column': 'total' } %}>
+                                    {{ total }}
+                                </th>
+                                <th {% include 'includes/table_sorting.twig' with { '_column': 'http' } %}>
+                                    HTTP
+                                </th>
+                                <th {% include 'includes/table_sorting.twig' with { '_column': 'ftp' } %}>
+                                    FTP
+                                </th>
+                                <th {% include 'includes/table_sorting.twig' with { '_column': 'pop3_imap' } %}>
+                                    POP3 / IMAP
+                                </th>
+                                <th {% include 'includes/table_sorting.twig' with { '_column': 'smtp' } %}>
+                                    SMTP
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr class="is-selected">
+                                <td colspan="2">
+                                    <strong>
+                                        {{ total }}
+                                    </strong>
+                                </td>
+                                <td class="has-text-right">
+                                    {{ _total.total }}
+                                </td>
+                                <td>
+                                    <ul class="horizontal-separated-list">
+                                        <li>{{ _total.http }}</li>
+                                        <li>{{ _total.http_share }}</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul class="horizontal-separated-list">
+                                        <li>{{ _total.ftp }}</li>
+                                        <li>{{ _total.ftp_share }}</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul class="horizontal-separated-list">
+                                        <li>{{ _total.pop3imap }}</li>
+                                        <li>{{ _total.pop3imap_share }}</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul class="horizontal-separated-list">
+                                        <li>{{ _total.smtp }}</li>
+                                        <li>{{ _total.smtp_share }}</li>
+                                    </ul>
+                                </td>
+                            </tr>
+
+                            {% for item in _traffic_items %}
+                                <tr>
+                                    <td>
+                                        {{ item.username }}
+                                    </td>
+                                    <td class="is-narrow">
+                                        {% include 'includes/icon.twig' with {
+                                            '_type': 'user_edit',
+                                            '_url': '?page=admin_accounts_user&action=edit&id=' ~ item.id
+                                        } %}
+                                    </td>
+                                    <td>
+                                        {{ macros.usage_indicator({
+                                            'current': item.total,
+                                            'max': item.total_max,
+                                            'percent': item.total_percent,
+                                        }) }}
+                                    </td>
+                                    {% for protocol in item.protocols %}
+                                        <td>
+                                            <ul class="horizontal-separated-list">
+                                                <li>{{ protocol.total }}</li>
+                                                <li>{{ protocol.share }}</li>
+                                            </ul>
+                                            <p class="has-text-grey">
+                                                <span class="app-tooltip" data-tippy-content="{{ incoming_traffic }}">
+                                                    <span class="icon is-medium">
+                                                        <i class="fas fa-sign-in-alt"></i>
+                                                    </span>
+                                                    {{ protocol.in }}
+                                                </span>
+                                            </p>
+                                            <p class="has-text-grey">
+                                                <span class="app-tooltip" data-tippy-content="{{ outgoing_traffic }}">
+                                                    <span class="icon is-medium">
+                                                        <i class="fas fa-sign-out-alt"></i>
+                                                    </span>
+                                                    {{ protocol.out }}
+                                                </span>
+                                            </p>
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="42" class="has-text-grey-light">
+                                    {{ _traffic_items|length }} {{ items_total }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+            {% endif %}
+        </div>
+    </div>
+
+
+{% endblock %}

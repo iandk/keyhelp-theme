@@ -1,0 +1,51 @@
+{% extends 'base/extern.twig' %}
+
+{% block content %}
+
+    {% include 'includes/browser_requirements.twig' %}
+
+    <form action="index.php" method="post">
+        <input type="hidden" name="submit" value="1">
+        
+        {% if _open_page %}
+            <input type="hidden" name="open_page" value="{{ _open_page }}">
+        {% endif %}
+
+        {{ forms.input_wrapped({
+            'name': 'username',
+            'type': 'text',
+            'label': username,
+            'is_autofocus': true,
+        }) }}
+
+        {{ forms.input_wrapped({
+            'name': 'password',
+            'type': 'password',
+            'label': password,
+            'addons': {
+                'right': {
+                    'type': 'action',
+                    'label': show,
+                    'action': 'app-show-password'
+                }
+            },
+        }) }}
+
+        <div class="has-margin-bottom-large"></div>
+
+        {{ forms.button({
+            'label': login,
+            'style': 'primary',
+            'class': 'is-fullwidth'
+        }) }}
+    </form>
+
+    <p class="has-text-centered has-text-link has-margin-top-medium">
+        <a href="?page=forgotpw">{{ forgot_password }}</a>
+    </p>
+
+    {% if _app.is_demo %}
+        {% include 'includes/demo_login_info.twig' %}
+    {% endif %}
+
+{% endblock %}

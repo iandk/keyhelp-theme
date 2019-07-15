@@ -1,0 +1,110 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-large">
+        {{ help }}
+    </p>
+
+    <!-- button line -->
+    {% include 'includes/index_page_button_line.twig' with ({
+        '_add_btn_label': add_directory_protection,
+        '_add_btn_url': '?page=user_dir_protection&action=add',
+        '_form_id': 'form-protected-dir-index'
+    }) %}
+
+    <!-- item table -->
+    <div class="card">
+        <div class="card-content">
+
+            {% if _protected_dir_items is empty %}
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+
+                <form id="form-protected-dir-index" action="?page=user_dir_protection&action=delete" method="post">
+                    <div class="table-container">
+                        <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                            <thead>
+                                <tr>
+                                    <th class="is-narrow" {% include 'includes/table_sorting.twig' with { '_column': 'status' } %}>
+                                        S
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'path' } %}>
+                                        {{ directory }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'realm_title' } %}>
+                                        {{ realm_title }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'username' } %}>
+                                        {{ username }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        {{ options }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        <input class="app-check-all" type="checkbox">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in _protected_dir_items %}
+                                    <tr>
+                                        <td>
+                                            {% include 'includes/icon.twig' with { '_type': item.status } %}
+                                        </td>
+                                        <td>
+                                            <span class="has-text-grey-light">
+                                                /www
+                                            </span>
+                                            {{ item.path }}
+                                        </td>
+                                        <td>
+                                            {% if item.is_indistinct %}
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'attention',
+                                                    '_title': not_unique
+                                                } %}
+                                            {% endif %}
+                                            {{ item.realm_title }}
+                                        </td>
+                                        <td>
+                                            {{ item.username }}
+                                        </td>
+                                        <td class="is-narrow">
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'edit',
+                                                '_url': '?page=user_dir_protection&action=edit&id=' ~ item.id
+                                            } %}
+
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'delete',
+                                                '_url': '?page=user_dir_protection&action=delete&id=' ~ item.id
+                                            } %}
+                                        </td>
+                                        <td>
+                                            {{ item.checkbox }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="42" class="has-text-grey-light">
+                                        {{ _protected_dir_items|length }} {{ items_total }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </form>
+
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

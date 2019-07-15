@@ -1,0 +1,69 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script src="/theme/bulma/assets/js/page_webstats.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    <div class="columns">
+
+        <!-- show available months -->
+        <div class="column is-half">
+            {% include 'includes/card_start_stacked.twig' with { '_label': available_stats, '_icon': 'fas fa-chart-bar' } %}
+
+                <p class="has-margin-bottom-medium">
+                    {{ available_stats_desc }}
+                </p>
+
+                {% set _items_to_show = 5 %}
+
+                <div id="app-all-month">
+                    {% for url, label in _stats_links %}
+                        <p class="{{ loop.index > _items_to_show ? 'is-hidden'}}">
+                            <a href="{{ url }}" target="_blank" rel="nofollow noopener noreferrer">
+                                {{ label }}
+                            </a>
+                        </p>
+                    {% endfor %}
+                </div>
+
+                {% if _stats_links|length > _items_to_show %}
+                    {% include 'includes/cta.twig' with { '_misc': { 'label': show_all_month, 'id': 'app-btn-show-all-month' } } %}
+                {% endif %}
+
+            {% include 'includes/card_end_stacked.twig' %}
+        </div>
+
+        <!-- set password -->
+        <div class="column is-half">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-icon">
+                        <span class="icon is-medium">
+                            <i class="fas fa-key fa-lg"></i>
+                        </span>
+                    </div>
+                    <p class="card-header-title">
+                        {{ stats_access_password }}
+                    </p>
+                </div>
+                <div class="card-content">
+                    <form action="?page=user_webstats" method="post">
+                        <input type="hidden" name="submit" value="1">
+
+                        {% include 'includes/form_password.twig' with { '_leave_empty' : true } %}
+
+                        {% include 'includes/cta.twig' with { '_confirm': true } %}
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}

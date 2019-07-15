@@ -1,0 +1,114 @@
+{% include 'includes/card_start_stacked.twig' with { '_label': delete_confirmation, '_icon': 'fas fa-trash-alt' } %}
+    <div class="columns">
+        <div class="column
+                    is-10-tablet is-offset-1-tablet
+                    is-10-desktop is-offset-1-desktop
+                    is-8-widescreen is-offset-2-widescreen">
+
+            <form action="{{ _action }}" method="post">
+                <input type="hidden" name="submit" value="1">
+
+                {% for item in _items %}
+                    <input type="hidden" name="ids[]" value="{{ item.id }}">
+
+                    <div class="table-container">
+                        <table class="table is-fullwidth">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" class="has-text-right">
+                                        #{{ loop.index }}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for key, field in _config %}
+                                    {% if field.is_hidden != true %}
+                                        <tr>
+                                            <th class="is-half">
+                                                {{ field.label }}
+                                                {% if field.help %}
+                                                    <p class="has-text-weight-normal has-text-grey">
+                                                        <small>
+                                                            {{ field.help }}
+                                                        </small>
+                                                    </p>
+                                                {% endif %}
+                                            </th>
+                                            <td>
+                                                {% if field.has_warning_msg and item[key] is not empty %}
+                                                    <div class="has-text-danger">
+                                                        {{ field.has_warning_msg }}
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if item[key] is array %}
+                                                    {% if item[key] is empty %}
+                                                        <span class="has-text-grey">
+                                                            - {{ no_items_available }} -
+                                                        </span>
+                                                    {% else %}
+                                                        {% for value in item[key] %}
+                                                            {% if field.is_url %}
+                                                                <a href="http://{{ value }}" target="_blank" rel="nofollow noopener noreferrer">
+                                                                    {{ value }}
+                                                                </a>
+                                                            {% else %}
+                                                                {{ value|escape('html') }}
+                                                            {% endif %}
+                                                            <br>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                {% elseif item[key] is sameas(true) or item[key] is sameas(false) %}
+                                                    {{ macros.true_false_indicator(item[key]) }}
+                                                {% elseif field.is_checkbox %}
+                                                    {{ forms.checkbox({
+                                                        'name': item[key],
+                                                        'label': field.checkbox_label,
+                                                        'value': item.id,
+                                                        'is_checked': field.is_checkbox_checked
+                                                    }) }}
+                                                {% elseif item[key] == '' %}
+                                                    <span class="has-text-grey">
+                                                        &#x2014;
+                                                    </span>
+                                                {% else %}
+                                                    {% if field.is_nl2br %}
+                                                        {{ item[key]|escape('html')|nl2br }}
+                                                    {% else %}
+                                                        {{ item[key]|escape('html') }}
+                                                    {% endif %}
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                {% endfor %}
+
+                <div class="has-text-centered has-margin-top-xlarge has-margin-bottom-medium">
+                    {{ forms.checkbox_wrapped({
+                        'label': delete_confirmation,
+                        'help': delete_confirmation_help,
+                        'options': {
+                            'label': confirmation,
+                            'name': 'deletion_confirmation',
+                            'value': '1',
+                            'is_checked': false,
+                            'is_required': true,
+                        }
+                    }) }}
+                </div>
+
+                {% include 'includes/cta.twig' with { '_back': { 'target': _back_page }, '_confirm': { 'label': delete } } %}
+            </form>
+
+        </div>
+    </div>
+{% include 'includes/card_end_stacked.twig' %}

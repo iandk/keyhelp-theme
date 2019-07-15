@@ -1,0 +1,27 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    {% include 'includes/delete_page.twig' with {
+        '_action': '?page=' ~ _app.page ~ '&action=delete',
+        '_back_page': 'user_email',
+        '_config': {
+            'email_utf8': {
+                'label': email_account
+            },
+            'description': {
+                'label': description
+            },
+            'aliases': {
+                'label': alias_addresses
+            },
+            'forwardings': {
+                'label': forwarding
+            },
+        },
+        '_items': _email_accounts
+    } %}
+
+{% endblock %}

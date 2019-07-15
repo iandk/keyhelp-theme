@@ -1,0 +1,25 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    {% include 'includes/delete_page.twig' with {
+        '_action': '?page=ssl_certificates&action=delete',
+        '_back_page': 'ssl_certificates',
+        '_config': {
+            'name': {
+                'label': certificate_name
+            },
+            'components': {
+                'label': certificate_components
+            },
+            'domains': {
+                'label': used_for_domains,
+                'has_warning_msg': currently_in_use
+            },
+        },
+        '_items': _certificate_items
+    } %}
+
+{% endblock %}

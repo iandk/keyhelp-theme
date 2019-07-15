@@ -1,0 +1,236 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script src="/theme/bulma/assets/js/page_white_label.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-large">
+        {{ help }}
+    </p>
+
+    <!-- button line -->
+    <div class="level has-margin-bottom-medium">
+        <div class="level-left">
+        </div>
+        <div class="level-right">
+            <div class="level-item">
+                {{ forms.button({
+                    'label': export_settings,
+                    'style': 'primary',
+                    'url': '?page=admin_white_label_index&export=1'
+                }) }}
+            </div>
+            <div class="level-item">
+                {{ forms.button({
+                    'label': import_settings,
+                    'style': 'primary',
+                    'modal': 'app-modal-import-settings'
+                }) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="level has-margin-bottom-medium">
+        <div class="level-left">
+        </div>
+        <div class="level-right">
+            <div class="level-item">
+                {{ forms.button({
+                    'label': reset_all_settings,
+                    'style': 'secondary',
+                    'class': 'app-reset-all'
+                }) }}
+            </div>
+        </div>
+    </div>
+
+
+    <!-- item table -->
+    <div class="card">
+        <div class="card-content">
+
+            {% if _white_label_languages is empty %}
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+
+                 <div class="table-container">
+                    <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                        <thead>
+                            <tr>
+                                <th>
+                                   {{ language }}
+                                </th>
+                                <th class="is-narrow has-no-wrap">
+                                   {{ product_name }}
+                                </th>
+                                <th class="is-narrow has-no-wrap">
+                                   {{ page_title }}
+                                </th>
+                                <th class="is-narrow has-no-wrap">
+                                   {{ favicon }}
+                                </th>
+                                <th class="is-narrow has-no-wrap">
+                                   {{ internal_banner_short }}
+                                </th>
+                                <th class="is-narrow has-no-wrap">
+                                   {{ external_banner_short }}
+                                </th>
+                                <th class="is-narrow has-no-wrap">
+                                   CSS
+                                </th>
+                                <th class="is-narrow has-no-wrap">
+                                   JS
+                                </th>
+                                <th class="is-narrow has-no-wrap">
+                                   {{ footer }}
+                                </th>
+                                <th class="is-narrow has-no-wrap">
+                                   {{ help_links }}
+                                </th>
+                                <th class="is-narrow has-no-wrap">
+                                   {{ hidden_content }}
+                                </th>
+                                <th class="is-narrow has-no-wrap">
+                                    {{ options }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in _white_label_languages %}
+                                <tr {{ item.is_all_languages ? 'class="is-selected"' }}>
+                                    <td>
+                                        {{ item.is_all_languages ? '<strong>' }}
+                                        {{ item.language }}
+                                        {{ item.is_all_languages ? '</strong>' }}
+                                    </td>
+                                    <td>
+                                        {{ macros.true_false_indicator(item.has_product_name) }}
+                                    </td>
+                                    <td>
+                                        {{ macros.true_false_indicator(item.has_page_title) }}
+                                    </td>
+                                    <td>
+                                        {{ macros.true_false_indicator(item.has_favicon) }}
+                                    </td>
+                                    <td>
+                                        {{ macros.true_false_indicator(item.has_banner_intern) }}
+                                    </td>
+                                    <td>
+                                        {{ macros.true_false_indicator(item.has_banner_extern) }}
+                                    </td>
+                                    <td>
+                                        {{ macros.true_false_indicator(item.has_css) }}
+                                    </td>
+                                    <td>
+                                        {{ macros.true_false_indicator(item.has_js) }}
+                                    </td>
+                                    <td>
+                                        {{ macros.true_false_indicator(item.has_footer) }}
+                                    </td>
+                                    <td>
+                                        {{ macros.true_false_indicator(item.has_help_links) }}
+                                    </td>
+                                    <td>
+                                        {{ macros.true_false_indicator(item.has_hidden_content) }}
+                                    </td>
+                                    <td class="has-no-wrap">
+                                        {% include 'includes/icon.twig' with {
+                                            '_type': 'edit',
+                                            '_url': '?page=admin_white_label_edit&language=' ~ item.language_code
+                                        } %}
+                                        <span class="app-reset-language" data-reset-language="{{ item.language_code }}">
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'reset',
+                                                '_url': 'javascript:void(0)'
+                                            } %}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="42" class="has-text-grey-light">
+                                    {{ _white_label_languages|length }} {{ items_total }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- back -->
+    {% include 'includes/cta.twig' with { '_back': { 'target': 'admin_configuration' } } %}
+
+    <!-- modal import settings -->
+    <form action="?page=admin_white_label_index" enctype="multipart/form-data" method="post">
+        <input type="hidden" name="submit" value="1">
+        <input type="hidden" name="import" value="1">
+
+        <div id="app-modal-import-settings" class="modal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">{{ import_settings }}</p>
+                    <button class="delete app-modal-close" type="button"></button>
+                </header>
+                <div class="modal-card-body">
+                    <p class="has-margin-bottom-large has-text-centered">
+                        {{ import_note }}
+                    </p>
+                    <p>
+                        {{ forms.upload_wrapped({
+                            'name': 'import_file',
+                            'button_label': choose_file,
+                            'accept': '.json, application/json',
+                            'is_required': true
+                        }) }}
+                    </p>
+                </div>
+                <footer class="modal-card-foot">
+                    {{ forms.button({'label': save, 'style': 'primary' }) }}
+                    {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+                </footer>
+            </div>
+        </div>
+    </form>
+
+    <!-- modal reset settings -->
+    <form action="" method="post">
+        <input type="hidden" name="submit" value="1">
+        <input type="hidden" name="reset" value="1">
+        <input type="hidden" name="reset_type" value="">
+
+        <div id="app-modal-reset-settings" class="modal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">{{ reset_settings }}</p>
+                    <button class="delete app-modal-close" type="button"></button>
+                </header>
+                <div class="modal-card-body">
+                    <p class="has-text-centered">
+                        {{ reset_settings_confirmation }}
+                    </p>
+                </div>
+                <footer class="modal-card-foot">
+                    {{ forms.button({'label': yes, 'style': 'primary' }) }}
+                    {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+                </footer>
+            </div>
+        </div>
+    </form>
+{% endblock %}

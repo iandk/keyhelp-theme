@@ -1,0 +1,61 @@
+{% spaceless %}
+    {#
+        Available variables:
+
+        _type           Determines appearance and color of the icon.
+        _tooltip        Adds a tooltip to the icon, (is omitted, if _label is present).
+        _label          Displays a label next to the icon.
+        _url            If present, adds a link tag with the specified URL.
+        _is_new_tab     If true, add target="_blank" to links.
+    #}
+
+    {% set icons = {
+        edit:              { class: 'fas fa-pen',                  color: '',                    tooltip: icon_tooltip_edit },
+        delete:            { class: 'fas fa-minus-circle',         color: 'has-text-danger',     tooltip: icon_tooltip_delete },
+        user_edit:         { class: 'fas fa-user-edit',            color: '',                    tooltip: icon_tooltip_user_edit },
+        status_okay:       { class: 'fas fa-check',                color: 'has-text-grey',       tooltip: icon_tooltip_status_okay },
+        status_error:      { class: 'fas fa-exclamation-triangle', color: 'has-text-danger',     tooltip: icon_tooltip_status_error },
+        status_processing: { class: 'fas fa-wrench',               color: 'has-text-grey',       tooltip: icon_tooltip_status_processing },
+        status_delete:     { class: 'fas fa-trash',                color: 'has-text-grey',       tooltip: icon_tooltip_status_deletion },
+        status_unknown:    { class: 'fas fa-question',             color: 'has-text-grey',       tooltip: icon_tooltip_status_unknown },
+        dns:               { class: 'fas fa-globe-americas',       color: 'has-text-grey-light', tooltip: icon_tooltip_dns },
+        dns_active:        { class: 'fas fa-globe-americas',       color: '',                    tooltip: icon_tooltip_dns_active },
+        login:             { class: 'fas fa-sign-in-alt',          color: '',                    tooltip: icon_tooltip_login,               is_new_tab: true },
+        webmail:           { class: 'fas fa-envelope',             color: '',                    tooltip: icon_tooltip_webmail,             is_new_tab: true },
+        database:          { class: 'fas fa-database',             color: '',                    tooltip: 'PhpMyAdmin',                     is_new_tab: true },
+        start:             { class: 'fas fa-play',                 color: '',                    tooltip: icon_tooltip_start },
+        start_disabled:    { class: 'fas fa-play',                 color: 'has-text-grey-light', tooltip: icon_tooltip_start_disabled },
+        stop:              { class: 'fas fa-stop',                 color: 'has-text-danger',     tooltip: icon_tooltip_stop },
+        stop_disabled:     { class: 'fas fa-stop',                 color: 'has-text-grey-light', tooltip: icon_tooltip_stop_disabled },
+        restart:           { class: 'fas fa-sync-alt',             color: '',                    tooltip: icon_tooltip_restart },
+        restart_disabled:  { class: 'fas fa-sync-alt',             color: 'has-text-grey-light', tooltip: icon_tooltip_restart_disabled },
+        reset:             { class: 'fas fa-undo-alt',             color: 'has-text-danger',     tooltip: icon_tooltip_reset },
+        attention:         { class: 'fas fa-exclamation-triangle', color: 'has-text-danger',     tooltip: icon_tooltip_attention },
+        download:          { class: 'fas fa-download',             color: '',                    tooltip: icon_tooltip_download },
+        file_permissions:  { class: 'fas fa-key',                  color: '',                    tooltip: '' },
+        file_rename:       { class: 'fas fa-file-signature',       color: '',                    tooltip: '' },
+        configure:         { class: 'fas fa-cog',                  color: '',                    tooltip: icon_tooltip_configure },
+        log:               { class: 'fas fa-file-alt',             color: '',                    tooltip: '' },
+        extract:           { class: 'fas fa-box-open',             color: '',                    tooltip: '' },
+        placeholder:       { },
+
+    } %}
+
+    {% set class        = icons[_type].class %}
+    {% set color        = icons[_type].color %}
+    {% set tooltip      = _tooltip|default(icons[_type].tooltip) %}
+    {% set show_tooltip = not _label and tooltip %}
+    {% set is_new_tab   = _is_new_tab or icons[_type].is_new_tab %}
+
+    {% if _url %}
+        <a class="{{ color }}" href="{{ _url }}" {{ is_new_tab ? 'target="_blank" rel="nofollow noopener noreferrer"' }}>
+    {% endif %}
+        <span class="icon is-medium {{ not _url ? color }} {{ show_tooltip ? 'app-tooltip' }}" {{ show_tooltip ? 'data-tippy-content="' ~ tooltip ~ '"' }}>
+            <i class="{{ class }}"></i>
+        </span>
+        {{ _label ? _label }}
+    {% if _url %}
+        </a>
+    {% endif %}
+
+{% endspaceless %}

@@ -1,0 +1,221 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    <!-- panel sessions -->
+    <h2 class="title is-5 has-margin-bottom-small">
+        {{ panel_sessions }}
+    </h2>
+
+    <p class="has-margin-bottom-medium">
+        {{ panel_session_idle_time }}: {{ _panel_session_idle_time }}
+    </p>
+
+    <div class="level">
+        <div class="level-left">
+            <div class="level-item">
+            </div>
+        </div>
+        <div class="level-right">
+            <div class="level-item">
+                {{ forms.button({
+                    'label': stop_selected_sessions,
+                    'style': 'secondary',
+                    'modal': 'app-modal-stop-sessions'
+                }) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-content">
+
+            {% if _panel_sessions is empty %}
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+                <form id="form-stop-sessions" action="?page=admin_active_sessions" method="post">
+                    <div class="table-container">
+                        <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                            <thead>
+                                <th {% include 'includes/table_sorting.twig' with { '_table': 'panel', '_column': 'username' } %}>
+                                    {{ username }}
+                                </th>
+                                <th {% include 'includes/table_sorting.twig' with { '_table': 'panel', '_column': 'role' } %}>
+                                    {{ user_role }}
+                                </th>
+                                <th {% include 'includes/table_sorting.twig' with { '_table': 'panel', '_column': 'ip_address' } %}>
+                                    {{ ip_address }}
+                                </th>
+                                <th {% include 'includes/table_sorting.twig' with { '_table': 'panel', '_column': 'login_timestamp' } %}>
+                                    {{ login_time }}
+                                </th>
+                                <th {% include 'includes/table_sorting.twig' with { '_table': 'panel', '_column': 'idle_time' } %}>
+                                    {{ idle_time }}
+                                </th>
+                                <th class="is-narrow">
+                                    <label>
+                                        <input class="app-check-all" type="checkbox">
+                                    </label>
+                                </th>
+                            </thead>
+                            <tbody>
+                                {% for item in _panel_sessions %}
+                                    <tr>
+                                        <td>
+                                            {{ item.username }}
+                                        </td>
+                                        <td>
+                                            {{ item.role }}
+                                        </td>
+                                        <td>
+                                            {{ item.ip_address }}
+                                        </td>
+                                        <td>
+                                            {{ item.login_time }}
+                                        </td>
+                                        <td>
+                                            {{ item.idle_time }}
+                                        </td>
+                                        <td>
+                                            {{ item.checkbox }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="42" class="has-text-grey-light">
+                                        {{ _panel_sessions|length }} {{ items_total }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </form>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- modal stop panel sessions -->
+    <div id="app-modal-stop-sessions" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">{{ stop_selected_sessions }}</p>
+                <button class="delete app-modal-close" type="button"></button>
+            </header>
+            <div class="modal-card-body">
+                <p class="has-text-centered">
+                    {{ are_you_sure }}
+                </p>
+            </div>
+            <footer class="modal-card-foot">
+                {{ forms.button({'label': yes, 'style': 'primary', 'submit_form': 'form-stop-sessions' }) }}
+                {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+            </footer>
+        </div>
+    </div>
+
+    <!-- ftp sessions -->
+    <div class="has-margin-top-large"></div>
+
+    <h2 class="title is-5 has-margin-bottom-small">
+        {{ ftp_sessions }}
+    </h2>
+
+    <p class="has-margin-bottom-medium">
+        {{ ftp_server_uptime }}: {{ _ftp_server_uptime }}
+    </p>
+
+    <div class="card">
+        <div class="card-content">
+
+            {% if _ftp_sessions is empty %}
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+                <div class="table-container">
+                    <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                        <thead>
+                            <th {% include 'includes/table_sorting.twig' with { '_table': 'ftp', '_column': 'username' } %}>
+                                {{ username }}
+                            </th>
+                            <th {% include 'includes/table_sorting.twig' with { '_table': 'ftp', '_column': 'login_time' } %}>
+                                {{ login_time }}
+                            </th>
+                            <th {% include 'includes/table_sorting.twig' with { '_table': 'ftp', '_column': 'client' } %}>
+                                {{ client }}
+                            </th>
+                            <th {% include 'includes/table_sorting.twig' with { '_table': 'ftp', '_column': 'protocol' } %}>
+                                {{ protocol }}
+                            </th>
+                            <th {% include 'includes/table_sorting.twig' with { '_table': 'ftp', '_column': 'status' } %}>
+                                {{ status }}
+                            </th>
+                            <th {% include 'includes/table_sorting.twig' with { '_table': 'ftp', '_column': 'idle_time' } %}>
+                                {{ idle_time }}
+                            </th>
+                            <th {% include 'includes/table_sorting.twig' with { '_table': 'ftp', '_column': 'progress' } %}>
+                                {{ progress }}
+                            </th>
+                            <th {% include 'includes/table_sorting.twig' with { '_table': 'ftp', '_column': 'speed_bytes' } %}>
+                                {{ speed }}
+                            </th>
+                            <th {% include 'includes/table_sorting.twig' with { '_table': 'ftp', '_column': 'location' } %}>
+                                {{ location }}
+                            </th>
+                        </thead>
+                        <tbody>
+                            {% for item in _ftp_sessions %}
+                                <tr>
+                                    <td>
+                                        {{ item.username }}
+                                    </td>
+                                    <td>
+                                        {{ item.login_time }}
+                                    </td>
+                                    <td>
+                                        {{ item.client }}
+                                    </td>
+                                    <td>
+                                        {{ item.protocol }}
+                                    </td>
+                                    <td>
+                                        {{ item.status }}
+                                    </td>
+                                    <td>
+                                        {{ item.idle_time }}
+                                    </td>
+                                    <td>
+                                        {{ item.progress }}
+                                    </td>
+                                    <td>
+                                        {{ item.speed }}
+                                    </td>
+                                    <td>
+                                        {{ item.location }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="42" class="has-text-grey-light">
+                                    {{ _ftp_sessions|length }} {{ items_total }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+{% endblock %}

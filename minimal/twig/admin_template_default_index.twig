@@ -1,0 +1,92 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_css %}
+    <link rel="stylesheet" href="/theme/bulma/assets/vendor/codemirror/codemirror.min.css?{{ _app.cache_busting }}">
+{% endblock %}
+
+
+
+{% block page_scripts %}
+    <script src="/theme/bulma/assets/vendor/codemirror/codemirror.min.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/bulma/assets/vendor/codemirror/mode/xml.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/bulma/assets/vendor/codemirror/mode/htmlmixed.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/bulma/assets/vendor/codemirror/mode/javascript.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/bulma/assets/vendor/codemirror/mode/css.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/bulma/assets/vendor/codemirror/mode/clike.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/bulma/assets/vendor/codemirror/mode/php.js?{{ _app.cache_busting }}"></script>
+
+    <script>
+        var textarea = document.getElementsByName('code')[0];
+        var editor = CodeMirror.fromTextArea(textarea, {
+            lineNumbers: true,
+            mode: 'application/x-httpd-php'
+        } );
+        editor.setSize(null, '50em');
+    </script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-large">
+        {{ help }}
+    </p>
+
+    <!-- settings -->
+    {% include 'includes/card_start.twig' with { '_is_wide': true } %}
+
+        <form action="?page=admin_template_default_index" method="post">
+            <input type="hidden" name="update" value="1">
+
+            {{ forms.select_wrapped({
+                'name': 'filename',
+                'label': filename,
+                'help': filename_help,
+                'options': _filenames,
+                'selected': _filenames_selected,
+            }) }}
+
+            {{ forms.textarea_wrapped({
+                'name': 'code',
+                'label': code,
+                'help': code_help,
+                'rows': 20,
+                'value': _code
+            }) }}
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': 'admin_configuration' }, '_reset': _is_custom_index, '_confirm': true } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+    <!-- modal reset -->
+    {% if _is_custom_index %}
+        <form action="index.php?page=admin_template_default_index" method="post">
+            <input type="hidden" name="reset" value="1">
+
+            <div id="app-modal-reset-settings" class="modal">
+                <div class="modal-background"></div>
+                <div class="modal-card">
+                    <header class="modal-card-head">
+                        <p class="modal-card-title">{{ reset_settings }}</p>
+                        <button class="delete app-modal-close" type="button"></button>
+                    </header>
+                    <div class="modal-card-body">
+                        <p class="has-text-centered">
+                            {{ reset_settings_confirmation }}
+                        </p>
+                    </div>
+                    <footer class="modal-card-foot">
+                        {{ forms.button({'label': yes, 'style': 'primary' }) }}
+                        {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+                    </footer>
+                </div>
+            </div>
+        </form>
+    {% endif %}
+
+{% endblock %}

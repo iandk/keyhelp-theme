@@ -1,0 +1,242 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_css %}
+    <link rel="stylesheet" href="/theme/bulma/assets/vendor/codemirror/codemirror.min.css?{{ _app.cache_busting }}">
+{% endblock %}
+
+
+
+{% block page_scripts %}
+    <script src="/theme/bulma/assets/vendor/codemirror/codemirror.min.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/bulma/assets/vendor/codemirror/mode/xml.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/bulma/assets/vendor/codemirror/mode/htmlmixed.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/bulma/assets/vendor/codemirror/mode/javascript.js?{{ _app.cache_busting }}"></script>
+    <script src="/theme/bulma/assets/vendor/codemirror/mode/css.js?{{ _app.cache_busting }}"></script>
+
+    <script id="app-button-template" type="text/x-handlebars-template">
+        <div class="columns has-margin-bottom-none">
+            <div class="column">
+                {{ forms.input_wrapped({
+                    'is_template': true,
+                    'help': label,
+                    'name': 'label',
+                    'type': 'text',
+                }) }}
+            </div>
+            <div class="column has-mobile-top-padding-none">
+                {{ forms.input_wrapped({
+                    'is_template': true,
+                    'help': url,
+                    'name': 'url',
+                    'type': 'url',
+                    'value': 'https://'
+                }) }}
+            </div>
+            <div class="column is-narrow has-mobile-top-padding-none">
+                <div class="has-margin-top-large is-hidden-mobile"></div>
+                {{ forms.button({
+                    'label': remove,
+                    'style': 'secondary',
+                    'type': 'button',
+                    'class': 'app-remove-button'
+                }) }}
+            </div>
+        </div>
+    </script>
+
+    <script src="/theme/bulma/assets/js/page_white_label_edit.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    {% include 'includes/card_start.twig' %}
+
+        <form action="?page=admin_white_label_edit" enctype="multipart/form-data" method="post">
+            <input type="hidden" name="submit" value="1">
+            <input type="hidden" name="language" value="{{ _language }}">
+
+            {{ forms.input_wrapped({
+                'label': language,
+                'value': _language_long,
+                'is_disabled': true
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': product_name,
+                'help': product_name_help,
+                'name': 'product_name',
+                'type': 'text',
+                'value': _product_name
+            }) }}
+
+           {{ forms.input_wrapped({
+                'label': page_title,
+                'name': 'page_title',
+                'type': 'text',
+                'value': _page_title
+            }) }}
+
+            {% for item in _images %}
+                <div class="app-image-container">
+                    <input class="app-has-image" name="has_{{ item.name }}" type="hidden" value="{{ item.image ? '1' : '0' }}">
+
+                    {{ forms.upload_wrapped({
+                        'label': item.label,
+                        'help': item.name != 'favicon' ? banner_help,
+                        'name': item.name,
+                        'button_label': choose_file,
+                        'accept': 'image/*'
+                    }) }}
+
+                    <div class="app-image-and-button" style="display: {{ item.image ? 'block' : 'none' }};">
+                        {{ forms.button({
+                            'label': remove_image,
+                            'style': 'secondary',
+                            'type': 'button',
+                            'class': 'app-remove-image is-small',
+                        }) }}
+
+                        <div class="has-margin-top-medium has-margin-bottom-medium has-text-centered">
+                            <img class="app-image has-frame" src="{{ item.image }}" style="max-height: 5em;">
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- footer -->
+            {{ forms.textarea_wrapped({
+                'label': footer,
+                'help': footer_help,
+                'name': 'footer',
+                'value': _footer
+            }) }}
+
+            <div class="has-margin-bottom-medium">
+                {{ forms.button({
+                    'label': preview,
+                    'id': 'app-btn-preview-footer',
+                    'style': 'primary',
+                    'type': 'button',
+                }) }}
+            </div>
+
+            <!-- css -->
+            {{ forms.textarea_wrapped({
+                'label': additional_css,
+                'help': css_help,
+                'name': 'css',
+                'value': _css
+            }) }}
+
+            <div class="has-margin-bottom-medium">
+                {{ forms.button({
+                    'label': preview,
+                    'id': 'app-btn-preview-css',
+                    'style': 'primary',
+                    'type': 'button',
+                }) }}
+            </div>
+
+            <!-- javascript -->
+            {{ forms.textarea_wrapped({
+                'label': additional_js,
+                'help': js_help,
+                'name': 'js',
+                'value': _js
+            }) }}
+
+            <div class="has-margin-bottom-medium">
+                {{ forms.button({
+                    'label': preview,
+                    'id': 'app-btn-preview-js',
+                    'style': 'primary',
+                    'type': 'button',
+                }) }}
+            </div>
+
+            <!-- trusted sources -->
+            {{ forms.textarea_wrapped({
+                'label': trusted_sources,
+                'help': trusted_sources_help,
+                'name': 'trusted_sources',
+                'value': _trusted_sources,
+                'is_auto_resize': true,
+            }) }}
+
+
+            <!-- hidden content -->
+            {{ forms.checkbox_wrapped({
+                'label': hidden_content,
+                'options': [
+                    {
+                        'label': hide_keyweb_product_ads,
+                        'name': 'is_hide_keyweb_ads',
+                        'value': '1',
+                        'is_checked': _is_hide_keyweb_ads
+                    },
+                    {
+                        'label': hide_changelog,
+                        'name': 'is_hide_changelog',
+                        'value': '1',
+                        'is_checked': _is_hide_changelog
+                    },
+                    {
+                        'label': hide_news,
+                        'name': 'is_hide_news',
+                        'value': '1',
+                        'is_checked': _is_hide_news
+                    }
+                ]
+            }) }}
+
+            <!-- help links -->
+            <input type="hidden" name="help_links" value="{{ _help_links }}">
+
+            {% for area in ['admin', 'user'] %}
+                <div class="app-help-links-area-container" data-area="{{ area }}">
+                    {{ forms.radio_wrapped({
+                        'label': help_links ~ ' / ' ~ (area == 'admin' ? admin_area : user_area),
+                        'options': [
+                            {
+                                'label': default,
+                                'name': 'help_links_' ~ area,
+                                'value': 'default'
+                            },
+                            {
+                                'label': hide_menu,
+                                'name': 'help_links_' ~ area,
+                                'value': 'hide'
+                            },
+                            {
+                                'label': custom_settings,
+                                'name': 'help_links_' ~ area,
+                                'value': 'custom'
+                            },
+                        ]
+                    }) }}
+                    <div class="app-with-custom" style="display: none;">
+                        <div class="app-link-container">
+                            <!-- added by javascript -->
+                        </div>
+
+                        <div class="has-text-centered has-margin-bottom-medium">
+                            {{ forms.button({
+                                'label': add_link,
+                                'type': 'button',
+                                'class': 'app-add-link'
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': 'admin_white_label_index' }, '_confirm': true } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}

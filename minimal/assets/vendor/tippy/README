@@ -1,0 +1,24 @@
+Version:    4.2.1
+            1.14.7 (propper.min.js)
+
+Releases:   https://github.com/atomiks/tippyjs/releases
+
+            For version 4:
+            https://unpkg.com/popper.js@1/dist/umd/popper.min.js
+            https://unpkg.com/tippy.js@4
+            https://unpkg.com/tippy.js@4/themes/light-border.css
+
+Homepage:   https://atomiks.github.io/tippyjs/
+
+Notes:      We can use the light-border.css theme and modify it
+            slightly to match our KeyHelp design:
+
+            color: $text;
+            box-shadow: $kh-shadow;
+
+            The theme is inside scss/partialy/_tippy
+
+
+
+
+

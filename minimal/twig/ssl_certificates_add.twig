@@ -1,0 +1,215 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script src="/theme/bulma/assets/js/page_ssl_certificates.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    {% include 'includes/card_start.twig' %}
+
+        <form action="?page=ssl_certificates&action=add" method="post" autocomplete="off" enctype="multipart/form-data">
+            <input type="hidden" name="submit" value="1">
+
+            {{ forms.input_wrapped({
+                'label': certificate_name,
+                'help': certificate_name_help,
+                'name': 'certificate_name',
+                'type': 'text',
+                'value': _certificate_name,
+                'is_required': true
+            }) }}
+
+            {% if _app.area == 'admin' %}
+                {{ forms.select_wrapped({
+                    'label': owner,
+                    'name': 'owner',
+                    'options': _owners,
+                    'selected': _owners_selected
+                }) }}
+            {% endif %}
+
+            {{ forms.radio_wrapped({
+                'label': choose_action,
+                'options': [
+                    {
+                        'label': generate_csr,
+                        'name': 'add_type',
+                        'value': 'csr',
+                        'is_checked': _add_type == 'csr',
+                    },
+                    {
+                        'label': generate_self_signed,
+                        'name': 'add_type',
+                        'value': 'self_signed',
+                        'is_checked': _add_type == 'self_signed'
+                    },
+                    {
+                        'label': upload_existing_cert,
+                        'name': 'add_type',
+                        'value': 'upload',
+                        'is_checked': _add_type == 'upload'
+                    },
+                ]
+            }) }}
+
+
+            <div class="has-margin-large">
+                <hr class="has-background-grey-light">
+            </div>
+
+
+            <div class="app-show-with-csr app-show-with-self-signed">
+
+                <div class="app-show-with-csr">
+                    {{ forms.label_wrapped({
+                        'label': generate_csr,
+                        'help': generate_csr_help
+                    }) }}
+                </div>
+
+                <div class="app-show-with-self-signed">
+                    {{ forms.label_wrapped({
+                        'label': generate_self_signed,
+                        'help': generate_self_signed_help
+                    }) }}
+                </div>
+
+                {{ forms.select_wrapped({
+                    'label': key_length,
+                    'name': 'key_length',
+                    'options': _key_lengths,
+                    'selected': _key_lengths_selected
+                }) }}
+
+                {{ forms.select_wrapped({
+                    'label': country,
+                    'name': 'country',
+                    'options': _countries,
+                    'selected': _countries_selected
+                }) }}
+
+                {{ forms.input_wrapped({
+                    'label': state,
+                    'name': 'state',
+                    'value': _state,
+                    'is_required': true
+                }) }}
+
+                {{ forms.input_wrapped({
+                    'label': locality,
+                    'name': 'locality',
+                    'value': _locality,
+                    'is_required': true
+                }) }}
+
+                {{ forms.input_wrapped({
+                    'label': organization,
+                    'name': 'organization',
+                    'value': _organization,
+                    'is_required': true
+                }) }}
+
+                {{ forms.input_wrapped({
+                    'label': organization_unit,
+                    'name': 'organization_unit',
+                    'value': _organization_unit,
+                }) }}
+
+                {{ forms.input_wrapped({
+                    'label': domain,
+                    'help': domain_help,
+                    'name': 'domain',
+                    'value': _domain,
+                    'is_required': true
+                }) }}
+
+                {{ forms.input_wrapped({
+                    'label': email_of_responsible_person,
+                    'name': 'email',
+                    'type': 'email',
+                    'value': _email,
+                    'is_required': true
+                }) }}
+
+                <div class="app-show-with-self-signed">
+                    {{ forms.input_wrapped({
+                        'label': validity_period,
+                        'name': 'validity',
+                        'type': 'text',
+                        'value': _validity,
+                        'addons': {
+                            'left': {
+                                'type': 'select',
+                                'select': {
+                                    'name': 'validity_unit',
+                                    'options': _validity_units,
+                                    'selected':  _validity_units_selected
+                                }
+                            },
+                        }
+                    }) }}
+                </div>
+
+            </div>
+
+            <div class="app-show-with-upload" style="display: none;">
+                {{ forms.label_wrapped({
+                    'label': upload_existing_cert,
+                    'help': upload_existing_cert_help
+                }) }}
+
+                <!-- private key -->
+                {{ forms.label_wrapped({
+                    'label': private_key,
+                    'is_required': true,
+                    'has_small_margin': true,
+                }) }}
+
+                {{ forms.textarea_wrapped({
+                    'name': 'text_private_key',
+                }) }}
+
+                {{ forms.upload_wrapped({
+                    'name': 'file_private_key',
+                    'button_label': choose_file,
+                }) }}
+
+                <!-- certificate -->
+                {{ forms.label_wrapped({
+                    'label': certificate,
+                    'is_required': true,
+                    'has_small_margin': true,
+                }) }}
+
+                {{ forms.textarea_wrapped({
+                    'name': 'text_certificate',
+                }) }}
+
+                {{ forms.upload_wrapped({
+                    'name': 'file_certificate',
+                    'button_label': choose_file,
+                }) }}
+
+                <!-- ca certificate -->
+                {{ forms.textarea_wrapped({
+                    'label': ca_certificate,
+                    'name': 'text_ca_certificate',
+                }) }}
+
+                {{ forms.upload_wrapped({
+                    'name': 'file_ca_certificate',
+                    'button_label': choose_file,
+                }) }}
+            </div>
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': 'ssl_certificates' }, '_confirm': true } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    {% include 'includes/delete_page.twig' with {
+        '_action': '?page=user_dir_protection&action=delete',
+        '_back_page': 'user_dir_protection',
+        '_config': {
+            'path': {
+                'label': directory
+            },
+            'realm_title': {
+                'label': realm_title
+            },
+            'username': {
+                'label': username
+            },
+        },
+        '_items': _protected_dir_items
+    } %}
+
+{% endblock %}

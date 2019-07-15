@@ -1,0 +1,73 @@
+{% macro usage_indicator(params) %}
+
+{% set is_percent = params.current is null and params.max is null %}
+{% set percent_formatted = params.percent|number_format ~ ' %' %}
+{% set size = params.is_large ? 'is-small' : 'is-xsmall' %}
+
+<div class="usage-indicator app-tooltip" data-tippy-content="{{ percent_formatted }}">
+    <div class="level has-margin-bottom-xsmall is-mobile">
+        <div class="level-left has-margin-right-large">
+            <p class="level-item has-text-weight-bold">
+                {{ params.label }}
+            </p>
+        </div>
+        <div class="level-right">
+            <p class="level-item">
+                {% if is_percent %}
+                    {{ percent_formatted }}
+                {% else %}
+                    {{ params.current }} / {{ params.max }}
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <meter class="meter {{ size }}" value="{{ params.percent }}" min="0" max="100" low="{{ params.low|default('79') }}" high="{{ params.high|default('89') }}" optimum="{{ params.optimum|default('') }}">
+        <progress class="progress {{ size }}" value="{{ params.percent }}" max="100">
+            {{ percent_formatted }}
+        </progress>
+    </meter>
+</div>
+{% endmacro %}
+
+
+{% macro true_false_indicator(boolean) %}
+{% if boolean is sameas(true) %}
+    <span class="icon is-small">
+        <i class="fas fa-check-circle"></i>
+    </span>
+{% elseif boolean is sameas(false) %}
+    <span class="icon is-small has-text-grey-light">
+        <i class="far fa-circle"></i>
+    </span>
+{% endif %}
+{% endmacro %}
+
+
+{% macro amount_indicator(number) %}
+{% if number < 0 %}
+    <small>
+        <span class="icon is-small">
+            <i class="fas fa-infinity"></i>
+        </span>
+    </small>
+{% elseif number == 0 %}
+    <span class="has-text-grey">
+        &#x2014;
+    </span>
+{% else %}
+    {{ number }}
+{% endif %}
+{% endmacro %}
+
+
+{% macro tag(label, class) %}
+<span class="tag has-margin-left-small {{ class }}">
+    <span class="icon">
+        <i class="fas fa-tags"></i>
+    </span>
+    <span>
+        {{ label }}
+    </span>
+</span>
+{% endmacro %}

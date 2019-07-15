@@ -1,0 +1,477 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script>
+        var directoryBrowserPurpose = 'www';
+
+        {% if _app.area == 'admin' %}
+            var directoryBrowserUserId = {{ _id_owner }};
+        {% endif %}
+    </script>
+    <script src="/theme/bulma/assets/js/page_domain.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+{% block content %}
+
+    {% include 'includes/card_start.twig' %}
+
+        <form action="?page={{ _app.page }}&action={{ _action }}" method="post" autocomplete="off">
+            <input type="hidden" name="submit" value="1">
+            <input type="hidden" name="id" value="{{ _id }}">
+
+            <div class="tabs is-centered">
+                <ul>
+                    <li class="is-active">
+                        <a href="#tab-general-settings">{{ general }}</a>
+                    </li>
+                    {% if _app.area == 'admin' or _user.has_domain_security %}
+                        <li>
+                            <a href="#tab-security">{{ security }}</a>
+                        </li>
+                    {% endif %}
+                    {% if _owner_has_php or _owner_has_perl %}
+                        <li>
+                            <a href="#tab-interpreter">{{ interpreter }}</a>
+                        </li>
+                    {% endif %}
+                    {% if _app.area == 'admin' %}
+                        <li>
+                            <a href="#tab-apache-settings">{{ apache_settings }}</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+
+             <div class="tabs-content">
+                <div id="tab-general-settings" class="tabs-panel is-active">
+                    {% if _action == 'add' %}
+
+                        {% if _app.area == 'admin' %}
+                            <input type="hidden" name="id_owner" value="{{ _id_owner }}">
+
+                            {{ forms.label_wrapped({
+                                'label': owner,
+                                'value': _owner,
+                            }) }}
+                        {% endif %}
+
+                        {% if _app.area == 'admin' or _user.can_manage_main_domains %}
+                            {{ forms.radio_wrapped({
+                                'label': domain_type,
+                                'options': [
+                                    {
+                                        'label': main_domain,
+                                        'name': 'domain_type',
+                                        'value': 'main_domain',
+                                        'is_checked': _domain_type == 'main_domain',
+                                    },
+                                    {
+                                        'label': subdomain,
+                                        'name': 'domain_type',
+                                        'value': 'subdomain',
+                                        'is_checked': _domain_type == 'subdomain',
+                                    },
+                                ]
+                            }) }}
+
+                            <div id="app-show-with-main-domain" style="display: none">
+                                {{ forms.input_wrapped({
+                                    'label': complete_domain_name,
+                                    'name': 'domain_main',
+                                    'value': _domain_main,
+                                    'is_required_fake': true,
+                                }) }}
+                            </div>
+
+                            <div id="app-show-with-subdomain" style="display: none">
+                                {{ forms.input_wrapped({
+                                    'label': complete_domain_name,
+                                    'name': 'domain_subdomain',
+                                    'value': _domain_subdomain,
+                                    'is_required_fake': true,
+                                    'addons': {
+                                        'right': [
+                                            {
+                                                'label': '.'
+                                            },
+                                            {
+                                                'type': 'select',
+                                                'select': {
+                                                    'name': 'main_domain_id',
+                                                    'options': _main_domain_ids,
+                                                    'selected': _main_domain_ids_selected
+                                                }
+                                            }
+                                        ],
+                                    }
+                                }) }}
+                            </div>
+
+                            <div id="app-create-www-subdomain" style="display: none">
+                                {{ forms.checkbox_wrapped({
+                                    'label': create_www_subdomain,
+                                    'options': {
+                                        'label': yes,
+                                        'name': 'create_www_subdomain',
+                                        'value': '1',
+                                        'is_checked': _create_www_subdomain
+                                    }
+                                }) }}
+                            </div>
+                        {% else %}
+                            <input type="hidden" name="domain_type" value="subdomain">
+
+                            {{ forms.label_wrapped({
+                                'label': domain_type,
+                                'value': subdomain,
+                            }) }}
+
+                            {{ forms.input_wrapped({
+                                    'label': complete_domain_name,
+                                    'name': 'domain_subdomain',
+                                    'value': _domain_subdomain,
+                                    'is_required': true,
+                                    'addons': {
+                                        'right': [
+                                            {
+                                                'label': '.'
+                                            },
+                                            {
+                                                'type': 'select',
+                                                'select': {
+                                                    'name': 'main_domain_id',
+                                                    'options': _main_domain_ids,
+                                                    'selected': _main_domain_ids_selected
+                                                }
+                                            }
+                                        ],
+                                    }
+                                }) }}
+                        {% endif %}
+                    {% else %}
+
+                        {% if _app.area == 'admin' %}
+                            {{ forms.label_wrapped({
+                                'label': owner,
+                                'value': _owner,
+                            }) }}
+                        {% endif %}
+
+                        {{ forms.label_wrapped({
+                            'label': domain_type,
+                            'value': _is_subdomain ? subdomain : main_domain,
+                        }) }}
+
+                        {{ forms.input_wrapped({
+                            'label': domain,
+                            'value': _domain,
+                            'is_disabled': true,
+                        }) }}
+                    {% endif %}
+
+                    {{ forms.radio_wrapped({
+                        'label': domain_target,
+                        'options': [
+                            {
+                                'label': local_directory,
+                                'name': 'target_type',
+                                'value': 'directory',
+                                'is_checked': _target_type == 'directory',
+                            },
+                            {
+                                'label': forwarding,
+                                'name': 'target_type',
+                                'value': 'url',
+                                'is_checked': _target_type == 'url',
+                            },
+                        ]
+                    }) }}
+
+                    <div id="app-show-with-directory" style="display: none">
+                        {% include 'includes/form_browse_directory.twig' with {
+                            '_append_directory': '/www',
+                            '_help': directory_help,
+                            '_value': _path
+                        } %}
+
+                        {% if _skel_templates %}
+                            {{ forms.select_wrapped({
+                                'label': use_skel_template,
+                                'help': use_skel_template_help,
+                                'name': 'skel_template',
+                                'options': _skel_templates,
+                                'selected': _skel_templates_selected,
+                            }) }}
+                        {% endif %}
+                    </div>
+
+                    <div id="app-show-with-url" style="display: none">
+                        {{ forms.input_wrapped({
+                            'label': destination_address,
+                            'name': 'url',
+                            'value': _url,
+                            'is_required_fake': true,
+                            'addons': {
+                                'left': {
+                                    'type': 'select',
+                                    'select': {
+                                        'name': 'url_protocol',
+                                        'options': _url_protocols,
+                                        'selected': _url_protocols_selected
+                                    }
+                                },
+                            }
+                        }) }}
+
+                        {{ forms.radio_wrapped({
+                            'label': forwarding_type,
+                            'options': [
+                                {
+                                    'label': moved_permanently,
+                                    'help': moved_permanently_help,
+                                    'name': 'forwarding_type',
+                                    'value': '301',
+                                    'is_checked': _forwarding_type == '301',
+                                },
+                                {
+                                    'label': moved_temporarily,
+                                    'help': moved_temporarily_help,
+                                    'name': 'forwarding_type',
+                                    'value': '302',
+                                    'is_checked': _forwarding_type == '302',
+                                },
+                            ]
+                        }) }}
+                    </div>
+
+                    {% if _app.area == 'admin' %}
+                        {{ forms.checkbox_wrapped({
+                            'label': email_domain,
+                            'help': email_domain_help,
+                            'options': {
+                                'label': yes,
+                                'name': 'is_email_domain',
+                                'value': '1',
+                                'is_checked': _is_email_domain
+                            }
+                        }) }}
+
+                        {{ forms.checkbox_wrapped({
+                            'label': domain_is_disabled,
+                            'help': domain_is_disabled_help,
+                            'options': {
+                                'label': yes,
+                                'name': 'is_disabled',
+                                'value': '1',
+                                'is_checked': _is_disabled
+                            }
+                        }) }}
+                    {% endif %}
+
+                </div>
+
+                {% if _app.area == 'admin' or _user.has_domain_security %}
+                    <div id="tab-security" class="tabs-panel">
+                        {{ forms.radio_wrapped({
+                            'label': ssl_certificate,
+                            'help': certificate_help,
+                            'is_required': true,
+                            'options': [
+                                {
+                                    'label': no_certificate,
+                                    'help': no_certificate_help,
+                                    'name': 'certificate_type',
+                                    'value': 'none',
+                                    'is_checked': _certificate_type == 'none'
+                                },
+                                {
+                                    'label': lets_encrypt,
+                                    'help': lets_encrypt_help,
+                                    'name': 'certificate_type',
+                                    'value': 'lets_encrypt',
+                                    'is_checked': _certificate_type == 'lets_encrypt'
+                                },
+                                {
+                                    'label': select_certificate,
+                                    'name': 'certificate_type',
+                                    'value': 'custom',
+                                    'is_checked': _certificate_type == 'custom'
+                                },
+                            ]
+                        }) }}
+
+                        <div id="app-show-with-type-custom" style="display: none">
+                            {{ forms.select_wrapped({
+                                'label': available_certificates,
+                                'help': _certificate_not_belong_to_user ? '<span class="has-text-danger has-text-weight-bold">' ~ warning ~ '!</span> ' ~ certificate_not_belong_to_user,
+                                'name': 'certificate_id',
+                                'options': _certificate_ids,
+                                'selected': _certificate_ids_selected,
+                                'is_required_fake': true,
+                            }) }}
+                        </div>
+
+                        <div id="app-show-with-certificate" style="display: none">
+                            {{ forms.checkbox_wrapped({
+                                'label': secure_conncetion,
+                                'help': secure_conncetion_help,
+                                'options': {
+                                    'label': enabled,
+                                    'name': 'enforce_https',
+                                    'value': 1,
+                                    'is_checked': _enforce_https,
+                                }
+                            }) }}
+
+                            {{ forms.checkbox_wrapped({
+                                'label': hsts,
+                                'help': hsts_help ~ '<br><span class="has-text-danger has-text-weight-bold">' ~ warning ~ '!</span> ' ~ hsts_warning,
+                                'options': {
+                                    'label': enabled,
+                                    'name': 'hsts_enabled',
+                                    'value': '1',
+                                    'is_checked': _hsts_enabled,
+                                }
+                            }) }}
+
+                            {{ forms.input_wrapped({
+                                'help': hsts_max_age,
+                                'name': 'hsts_max_age',
+                                'type': 'number',
+                                'min': 0,
+                                'value': _hsts_max_age,
+                                'addons': {
+                                    'left': {
+                                        'type': 'select',
+                                        'select': {
+                                            'name': 'hsts_max_age_multiplier',
+                                            'options': _hsts_max_age_multipliers,
+                                            'selected': _hsts_max_age_multipliers_selected
+                                        }
+                                    },
+                                }
+                            }) }}
+
+                            {{ forms.checkbox_wrapped({
+                                'help': hsts_include_subdomains,
+                                'options': {
+                                    'label': enabled,
+                                    'name': 'hsts_is_include_subdomains',
+                                    'value': 1,
+                                    'is_checked': _hsts_is_include_subdomains,
+                                }
+                            }) }}
+
+                            {{ forms.checkbox_wrapped({
+                                'help': hsts_preload,
+                                'options': {
+                                    'label': enabled,
+                                    'name': 'hsts_is_preload',
+                                    'value': 1,
+                                    'is_checked': _hsts_is_preload,
+                                }
+                            }) }}
+                        </div>
+
+                        {% if not _is_subdomain %}
+                            {{ forms.checkbox_wrapped({
+                                'label': apply_security_to_all,
+                                'help': apply_to_all_help,
+                                'options': {
+                                    'label': yes,
+                                    'name': 'apply_security_to_all',
+                                    'value': '1',
+                                    'is_checked': _apply_security_to_all
+                                }
+                            }) }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {% if _owner_has_php or _owner_has_perl %}
+                    <div id="tab-interpreter" class="tabs-panel">
+
+                        {% if _owner_has_php %}
+                            {{ forms.select_wrapped({
+                                'label': php_interpreter,
+                                'help': php_interpreter_help,
+                                'name': 'php_interpreter',
+                                'options': _php_interpreters,
+                                'selected': _php_interpreters_selected,
+                            }) }}
+
+                            {% if not _is_subdomain %}
+                                {{ forms.checkbox_wrapped({
+                                    'label': apply_php_to_all,
+                                    'help': apply_to_all_help,
+                                    'options': {
+                                        'label': yes,
+                                        'name': 'apply_php_to_all',
+                                        'value': '1',
+                                        'is_checked': _apply_php_to_all
+                                    }
+                                }) }}
+                            {% endif %}
+                        {% endif %}
+
+                        {% if _owner_has_perl %}
+                            {{ forms.radio_wrapped({
+                                'label': cgi_path,
+                                'help': cgi_path_help,
+                                'options': [
+                                    {
+                                        'label': cgi_path_default,
+                                        'help': cgi_path_default_help,
+                                        'name': 'cgi_path_type',
+                                        'value': 'default',
+                                        'is_checked': _cgi_path_type == 'default',
+                                    },
+                                    {
+                                        'label': cgi_path_custom,
+                                        'name': 'cgi_path_type',
+                                        'value': 'custom',
+                                        'is_checked': _cgi_path_type == 'custom',
+                                    },
+                                ]
+                            }) }}
+
+                            <div id="app-show-with-cgi-path-type-custom" style="display: none">
+                                {{ forms.input_wrapped({
+                                    'name': 'cgi_path',
+                                    'value': _cgi_path,
+                                    'addons': {
+                                        'left': {
+                                            'label': '/www'
+                                        }
+                                    }
+                                }) }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+
+                {% if _app.area == 'admin' %}
+                    <div id="tab-apache-settings" class="tabs-panel">
+                        {{ forms.textarea_wrapped({
+                            'label': apache_directives,
+                            'help': apache_directives_help ~ '<br><span class="has-text-danger has-text-weight-bold">' ~ warning ~ '!</span> ' ~ apache_directives_warning,
+                            'name': 'apache_directives',
+                            'value': _apache_directives,
+                            'rows': 6,
+                            'is_auto_resize': true
+                        }) }}
+                    </div>
+                {% endif %}
+             </div>
+
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': 'domains' }, '_confirm': true } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}

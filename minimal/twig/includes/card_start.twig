@@ -1,0 +1,39 @@
+{% spaceless %}
+
+{% if _type == 'settings' or _type == '' %}
+    {% set icon, label = 'fas fa-cog', _label|default(settings) %}
+{% elseif _type == 'search' %}
+    {% set icon, label = 'fas fa-search', _label|default(search) %}
+{% else %}
+    {% set icon, label = 'fas fa-question-circle', 'Not Set' %}
+{% endif %}
+
+{% set default_column_size =
+        'is-10-tablet is-offset-1-tablet ' ~
+        'is-10-desktop is-offset-1-desktop ' ~
+        'is-8-widescreen is-offset-2-widescreen ' ~
+        'is-6-fullhd is-offset-3-fullhd' %}
+
+{% set wide_column_size =
+        'is-12-tablet ' ~
+        'is-12-desktop ' ~
+        'is-12-widescreen ' ~
+        'is-10-fullhd is-offset-1-fullhd'
+         %}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-header-icon">
+            <span class="icon is-medium">
+                <i class="{{ icon }} fa-lg"></i>
+            </span>
+        </div>
+        <div class="card-header-title">
+            {{ label }}
+        </div>
+    </div>
+    <div class="card-content">
+        <div class="columns">
+            <div class="column {{ _is_wide ? wide_column_size : default_column_size }}">
+
+{% endspaceless %}

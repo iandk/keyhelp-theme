@@ -1,0 +1,110 @@
+{% extends 'base/intern.twig' %}
+
+
+
+
+{% block content %}
+
+    <div class="tabs is-centered">
+        <ul>
+            <li class="is-active">
+                <a href="?page=admin_accounts_admin" data-is-link="true">{{ administrator_accounts }}</a>
+            </li>
+            <li>
+                <a href="?page=admin_accounts_user" data-is-link="true">{{ user_accounts }}</a>
+            </li>
+        </ul>
+    </div>
+
+    {% if _user.is_main_admin %}
+        <!-- button line -->
+        {% include 'includes/index_page_button_line.twig' with ({
+            '_add_btn_label': add_admin,
+            '_add_btn_url': '?page=admin_accounts_admin&action=add',
+            '_form_id': 'form-admin-account-index'
+        }) %}
+    {% endif %}
+
+    <!-- item table -->
+    <div class="card">
+        <div class="card-content">
+
+            {% if _admin_accounts is empty %}
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+
+                <form id="form-admin-account-index" action="?page=admin_accounts_admin&action=delete" method="post">
+                    <div class="table-container">
+                        <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                            <thead>
+                                <tr>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'username' } %}>
+                                        {{ username }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'is_main_admin' } %}>
+                                        {{ main_administrator }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'last_login_timestamp' } %}>
+                                        {{ last_login }}
+                                    </th>
+                                    {% if _user.is_main_admin %}
+                                        <th class="is-narrow">
+                                            {{ options }}
+                                        </th>
+                                        <th class="is-narrow">
+                                            <input class="app-check-all" type="checkbox">
+                                        </th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in _admin_accounts %}
+                                    <tr>
+                                        <td>
+                                            {{ item.username }}
+                                        </td>
+                                        <td>
+                                            {{ macros.true_false_indicator(item.is_main_admin) }}
+                                        </td>
+                                        <td class="is-narrow">
+                                            {{ item.last_login }}
+                                        </td>
+                                        {% if _user.is_main_admin %}
+                                            <td class="is-narrow">
+                                                {% if item.can_be_modified %}
+                                                    {% include 'includes/icon.twig' with {
+                                                        '_type': 'edit',
+                                                        '_url': '?page=admin_accounts_admin&action=edit&id=' ~ item.id
+                                                    } %}
+
+                                                    {% include 'includes/icon.twig' with {
+                                                        '_type': 'delete',
+                                                        '_url': '?page=admin_accounts_admin&action=delete&id=' ~ item.id
+                                                    } %}
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ item.checkbox }}
+                                            </td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="42" class="has-text-grey-light">
+                                        {{ _admin_accounts|length }} {{ items_total }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </form>
+
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

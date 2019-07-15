@@ -1,0 +1,180 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script>
+        var isEnablePassword = {{ _is_enable_password ? 'true' : 'false' }};
+    </script>
+    <script src="/theme/bulma/assets/js/page_backup.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+	{% include 'includes/card_start.twig' %}
+
+        <form action="?page=backup_scheduled_backup" method="post" autocomplete="off">
+            <input type="hidden" name="submit" value="1">
+
+            {{ forms.label_wrapped({
+                'label': backup_scope,
+                'help': _is_user_backup ? backup_scope_user : backup_scope_admin,
+            }) }}
+
+            {{ forms.checkbox_wrapped({
+                'label': backup_task_enabled,
+                'options': {
+                    'label': yes,
+                    'name': 'is_enabled',
+                    'value': '1',
+                    'is_checked': _is_enabled
+                }
+            }) }}
+
+            {{ forms.label_wrapped({
+                'label': backup_interval,
+                'help': server_timezone,
+                'is_required': true,
+            }) }}
+
+            {{ forms.select_wrapped({
+                'help': select_interval,
+                'name': 'period',
+                'options': _periods,
+                'selected': _periods_selected,
+            }) }}
+
+            <div id="app-weekdays">
+                {{ forms.select_wrapped({
+                    'help': day_of_week,
+                    'name': 'day_of_week',
+                    'options': _days_of_week,
+                    'selected': _days_of_week_selected,
+                }) }}
+            </div>
+
+            <div id="app-days-of-month">
+                {{ forms.select_wrapped({
+                    'help': day_of_month ~ '<br>(' ~ days_not_work_every_month ~ ')',
+                    'name': 'day_of_month',
+                    'options': _days_of_month,
+                    'selected': _days_of_month_selected,
+                }) }}
+            </div>
+
+            {{ forms.input_wrapped({
+                'help': time_format,
+                'name': 'backup_time',
+                'type': 'time',
+                'value': _time,
+                'is_required': true,
+            }) }}
+
+            {{ forms.radio_wrapped({
+                'label': repository,
+                'help': repository_help,
+                'is_required': true,
+                'options': [
+                    {
+                        'label': local_repository,
+                        'help': not _has_local_repository ? local_not_available,
+                        'name': 'repository',
+                        'value': 'local',
+                        'is_disabled': not _has_local_repository,
+                        'is_checked': _repository == 'local'
+                    },
+                    {
+                        'label': remote_repository,
+                        'help': not _has_remote_repository ? remote_not_available,
+                        'name': 'repository',
+                        'value': 'remote',
+                        'is_disabled': not _has_remote_repository,
+                        'is_checked': _repository == 'remote'
+                    },
+                ]
+            }) }}
+
+            {% if _is_user_backup and _is_local_repo_limited %}
+                {% set _append = '
+                    <br>
+                    <span id="app-local-repo-limit" style="display: none">
+                        ' ~ local_repo_file_limit ~ '
+                    </span>'
+                %}
+            {% else %}
+                {% set _append = '' %}
+            {% endif %}
+
+            {{ forms.input_wrapped({
+                'label': max_files_repo,
+                'help': max_files_repo_help ~ _append,
+                'name': 'rotation',
+                'type': 'number',
+                'value': _rotation,
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': notification,
+                'help': notification_help,
+                'name': 'notification',
+                'type': 'email',
+                'value': _notification,
+            }) }}
+
+            {{ forms.checkbox_wrapped({
+                'help': notification_on_success,
+                'options': {
+                    'label': yes,
+                    'name': 'notification_on_success',
+                    'value': '1',
+                    'is_checked': _notification_on_success
+                }
+            }) }}
+
+            {{ forms.checkbox_wrapped({
+                'label': enable_password,
+                'help': enable_password_help,
+                'options': {
+                    'label': yes,
+                    'name': 'is_enable_password',
+                    'value': '1',
+                    'is_checked': _is_enable_password
+                }
+            }) }}
+
+            <div id="app-password-container" style="display: none">
+                {% include 'includes/form_password.twig' with { '_leave_empty': _is_enable_password } %}
+            </div>
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': 'backup_index' }, '_reset': true, '_confirm': true } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+    <!-- modal reset settings -->
+    <form action="?page={{ _app.page }}" method="post">
+        <input type="hidden" name="reset_settings" value="1">
+
+        <div id="app-modal-reset-settings" class="modal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">{{ reset_settings }}</p>
+                    <button class="delete app-modal-close" type="button"></button>
+                </header>
+                <div class="modal-card-body">
+                    <p class="has-text-centered">
+                        {{ reset_settings_confirmation }}
+                    </p>
+                </div>
+                <footer class="modal-card-foot">
+                    {{ forms.button({'label': yes, 'style': 'primary' }) }}
+                    {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+                </footer>
+            </div>
+        </div>
+    </form>
+
+{% endblock %}

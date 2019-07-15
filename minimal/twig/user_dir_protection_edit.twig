@@ -1,0 +1,49 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script>
+        var directoryBrowserPurpose = 'www';
+    </script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    {% include 'includes/card_start.twig' %}
+
+        <form action="?page=user_dir_protection&action=edit" method="post" autocomplete="off">
+            <input type="hidden" name="submit" value="1">
+            <input type="hidden" name="id" value="{{ _id }}">
+
+            {% include 'includes/form_browse_directory.twig' with {
+                '_help': help_path,
+                '_append_directory': '/www',
+                '_value': _path
+
+            } %}
+
+            {{ forms.input_wrapped({
+                'name': 'realm_title',
+                'type': 'text',
+                'label': realm_title,
+                'value': _realm_title,
+            }) }}
+
+            {{ forms.input_wrapped({
+                'name': 'username',
+                'type': 'text',
+                'label': username,
+                'value': _username,
+            }) }}
+
+            {% include 'includes/form_password.twig' with { '_leave_empty': true } %}
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': 'user_dir_protection' }, '_confirm': true } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}

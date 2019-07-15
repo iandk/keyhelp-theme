@@ -1,0 +1,216 @@
+{% extends 'base/intern.twig' %}
+
+
+{% block page_scripts %}
+    <script src="/theme/bulma/assets/js/page_maintenance_intervals.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-large">
+        {{ help }}
+    </p>
+
+
+    <!-- item table -->
+    <div class="card">
+        <div class="card-content">
+
+            <div class="table-container">
+                <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                    <thead>
+                        <tr>
+                            <th class="is-narrow">
+                                S
+                            </th>
+                            <th>
+                                {{ task_name }}
+                            </th>
+                            <th>
+                                {{ last_run }}
+                            </th>
+                            <th>
+                                {{ interval }}
+                            </th>
+                            <th>
+                                {{ timeframe }}
+                            </th>
+                            <th class="is-narrow">
+                                {{ options }}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in _tasks %}
+                            <tr>
+                                <td style="display: none">
+                                    <input type="text" name="id" value="{{ item.id }}">
+                                    <input type="text" name="name" value="{{ item.name }}">
+                                    <input type="text" name="is_enabled" value="{{ item.is_enabled }}">
+                                    <input type="text" name="interval" value="{{ item.interval }}">
+                                    <input type="text" name="interval_unit" value="{{ item.interval_unit }}">
+                                    <input type="text" name="timeframe_start" value="{{ item.timeframe_start }}">
+                                    <input type="text" name="timeframe_end" value="{{ item.timeframe_end }}">
+                                </td>
+                                <td>
+                                    {% if item.is_enabled %}
+                                        <span class="icon is-medium has-text-success app-tooltip" data-tippy-content="{{ enabled }}">
+                                            <i class="fas fas fa-play"></i>
+                                        </span>
+                                    {% else %}
+                                        <span class="icon is-medium app-tooltip" data-tippy-content="{{ disabled }}">
+                                            <i class="fas fa-stop"></i>
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>
+                                        {{ item.name }}
+                                    </strong>
+                                    {% if item.is_started %}
+                                        {{ macros.tag(will_be_started, 'is-info') }}
+                                    {% endif %}
+                                    <br>
+                                    {{ item.help }}
+                                </td>
+                                <td class="has-no-wrap">
+                                    {{ item.last_run }}
+                                </td>
+                                <td class="has-no-wrap">
+                                    <strong>
+                                        {{ item.interval_string }}
+                                    </strong>
+                                </td>
+                                <td class="has-no-wrap">
+                                    {{ item.timeframe_string }}
+                                </td>
+                                <td class="is-narrow">
+                                    <span class="app-edit-task">
+                                        {% include 'includes/icon.twig' with {
+                                            '_type': 'edit',
+                                            '_url': 'javascript:void(0)'
+                                        } %}
+                                    </span>
+
+                                    {% include 'includes/icon.twig' with {
+                                        '_type': 'start',
+                                        '_url': '?page=' ~ _app.page ~ '&start_task=' ~ item.id,
+                                        '_title': tooltip_start_now
+                                    } %}
+
+                                    {% if item.logfile %}
+                                        {% include 'includes/icon.twig' with {
+                                            '_type': 'log',
+                                            '_url': '?page=admin_logs&logfile='~item.logfile,
+                                            '_is_new_tab': true,
+                                            '_title': tooltip_open_logfile
+                                        } %}
+                                    {% else %}
+                                        {% include 'includes/icon.twig' with {
+                                            '_type': 'placeholder'
+                                        } %}
+                                    {% endif %}
+
+
+                                    {% if item.additional_config %}
+                                        {% include 'includes/icon.twig' with {
+                                            '_type': 'configure',
+                                            '_url': item.additional_config,
+                                            '_is_new_tab': true,
+                                        } %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="42" class="has-text-grey-light">
+                                {{ _tasks|length }} {{ items_total }}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- modal -->
+    <form action="?page={{ _app.page }}" method="post">
+        <input type="hidden" name="submit" value="1">
+        <input type="hidden" name="id" value="">
+
+        <div id="app-modal-edit-task" class="modal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">{{ edit_settings }}</p>
+                    <button class="delete app-modal-close" type="button"></button>
+                </header>
+                <div class="modal-card-body">
+
+                    <div class="has-margin-bottom-medium has-text-centered">
+                        <p>{{ task_name }}</p>
+                        <p id="app-task-name" class="has-text-weight-bold"></p>
+                    </div>
+
+                    {{ forms.checkbox_wrapped({
+                        'label': is_enabled,
+                        'options': {
+                            'label': yes,
+                            'name': 'is_enabled',
+                            'value': '1',
+                        }
+                    }) }}
+
+                    {{ forms.input_wrapped({
+                        'label': interval,
+                        'name': 'interval',
+                        'type': 'number',
+                        'min': 0,
+                        'addons': {
+                            'left': {
+                                'type': 'select',
+                                'select': {
+                                    'name': 'interval_unit',
+                                    'options': _interval_units,
+                                }
+                            },
+                        }
+                    }) }}
+
+                    {{ forms.label_wrapped({
+                        'label': timeframe,
+                    }) }}
+
+                    <div class="columns">
+                        <div class="column">
+                            {{ forms.select_wrapped({
+                                'help': execution_timeframe_starts,
+                                'name': 'timeframe_start',
+                                'options': _hours
+                            }) }}
+                        </div>
+                        <div class="column">
+                            {{ forms.select_wrapped({
+                                'help': execution_timeframe_ends,
+                                'name': 'timeframe_end',
+                                'options': _hours
+                            }) }}
+                        </div>
+                    </div>
+
+                </div>
+                <footer class="modal-card-foot">
+                    {{ forms.button({'label': save, 'style': 'primary' }) }}
+                    {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+                </footer>
+            </div>
+        </div>
+    </form>
+
+{% endblock %}

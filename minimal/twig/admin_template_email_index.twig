@@ -1,0 +1,92 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-large">
+        {{ help }}
+    </p>
+
+    <!-- button line -->
+    {% include 'includes/index_page_button_line.twig' with ({
+        '_add_btn_label': add_email_template,
+        '_add_btn_url': '?page=admin_template_email_add',
+        '_form_id': 'form-email-templates-index'
+    }) %}
+
+    <!-- item table -->
+    <div class="card">
+        <div class="card-content">
+
+            {% if _email_templates is empty %}
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+
+                <form id="form-email-templates-index" action="?page=admin_template_email_delete" method="post">
+                    <div class="table-container">
+                        <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        {{ language }}
+                                    </th>
+                                    <th>
+                                        {{ event }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        {{ options }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        <input class="app-check-all" type="checkbox">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in _email_templates %}
+                                    <tr>
+                                        <td class="has-no-wrap">
+                                            {{ item.language }}
+                                        </td>
+                                        <td>
+                                            {{ item.event }}
+                                        </td>
+                                        <td class="has-no-wrap">
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'edit',
+                                                '_url': '?page=admin_template_email_edit&id=' ~ item.id
+                                            } %}
+
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'delete',
+                                                '_url': '?page=admin_template_email_delete&id=' ~ item.id
+                                            } %}
+                                        </td>
+                                        <td>
+                                            {{ item.checkbox }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="42" class="has-text-grey-light">
+                                        {{ _email_templates|length }} {{ items_total }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </form>
+
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- back -->
+    {% include 'includes/cta.twig' with { '_back': { 'target': 'admin_configuration' } } %}
+
+{% endblock %}

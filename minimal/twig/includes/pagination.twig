@@ -1,0 +1,62 @@
+{% if params.show %}
+<div class="has-margin-top-large">
+    <nav class="pagination is-centered">
+
+        {# previous page #}
+        <a class="pagination-previous" {{ params.is_first_page ? 'disabled' : 'href="' ~ params.url ~ (params.current - 1) ~ '"'}}>
+            {{ previous_page }}
+        </a>
+
+        {# next page #}
+        <a class="pagination-next" {{ params.is_last_page ? 'disabled' : 'href="' ~ params.url ~ (params.current + 1) ~ '"'}}>
+            {{ next_page }}
+        </a>
+
+        <ul class="pagination-list">
+            {# first page and '...' #}
+            {% if params.middle_start > 1 %}
+                <li>
+                    <a class="pagination-link" href="{{ params.url ~ 1 }}">
+                        1
+                    </a>
+                </li>
+
+                {% if params.middle_start > 2 %}
+                    <li>
+                        <span class="pagination-ellipsis">
+                            &hellip;
+                        </span>
+                    </li>
+                {% endif %}
+            {% endif %}
+
+            {# middle elements #}
+            {% for i in params.middle_start..params.middle_end %}
+                <li>
+                    <a class="pagination-link {{ params.current == i ? 'is-current'}}" href="{{ params.url ~ i }}">
+                        {{ i }}
+                    </a>
+                </li>
+            {% endfor %}
+
+            {# last page and '...' #}
+            {% if params.middle_end < params.last %}
+                {% if params.middle_end < params.last - 1 %}
+                    <li>
+                        <span class="pagination-ellipsis">
+                            &hellip;
+                        </span>
+                    </li>
+                {% endif %}
+
+                <li>
+                    <a class="pagination-link" href="{{ params.url ~ params.last }}">
+                        {{ params.last }}
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+
+    </nav>
+</div>
+{% endif %}

@@ -1,0 +1,25 @@
+{% spaceless %}
+
+{% for event in _app.events %}
+
+    {% if event.type == 'success' %}
+        {% set class = 'is-success' %}
+    {% elseif event.type == 'info' %}
+        {% set class = 'is-info' %}
+    {% elseif event.type == 'warning' %}
+        {% set class = 'is-warning' %}
+    {% else %}
+        {% set class = 'is-danger' %}
+    {% endif %}
+
+    <article class="message {{ class }}">
+        <div class="message-body {{ event.hide_event ? 'has-delete' }}">
+            {% if event.hide_event %}
+                <a href="?page={{ _app.page }}&hide_event={{ event.hide_event }}" class="delete app-tooltip" data-tippy-content="{{ hide_this_message }}"></a>
+            {% endif %}
+            {{ event.message }}
+        </div>
+    </article>
+{% endfor %}
+
+{% endspaceless %}

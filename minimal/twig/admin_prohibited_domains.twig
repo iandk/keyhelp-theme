@@ -1,0 +1,105 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-large">
+        {{ help }}
+    </p>
+
+    <!-- button line -->
+    <div class="level">
+        <div class="level-left">
+            <div class="level-item">
+                <strong>
+                    {{ check_for_prohibited_domains }}:
+                </strong>
+            </div>
+            <div class="level-item">
+                {{ forms.button({
+                    'label': _check_prohibited_domains ? enabled : disabled,
+                    'style': _check_prohibited_domains ? 'primary' : 'grey',
+                    'url': '?page=' ~ _app.page ~ '&toggle_check=1'
+                }) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- button line -->
+    {% include 'includes/index_page_button_line.twig' with ({
+        '_add_btn_label': add_domain,
+        '_add_btn_url': '?page=' ~ _app.page ~ '&action=add',
+        '_form_id': 'form-prohibited-domains'
+    }) %}
+
+    <!-- item table -->
+    <div class="card">
+        <div class="card-content">
+
+            {% if _prohibited_domains is empty %}
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+                <div class="table-container">
+                    <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                        <thead>
+                            <tr>
+                                <th {% include 'includes/table_sorting.twig' with { '_column': 'name' } %}>
+                                    {{ domain_name }}
+                                </th>
+                                <th class="is-narrow">
+                                    {{ options }}
+                                </th>
+                                <th class="is-narrow">
+                                    <label>
+                                        <input class="app-check-all" type="checkbox">
+                                    </label>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <form id="form-prohibited-domains" action="?page={{ _app.page }}&action=delete" method="post">
+                                {% for item in _prohibited_domains %}
+                                    <tr>
+                                        <td>
+                                            {{ item.name }}
+                                        </td>
+                                        <td class="is-narrow">
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'edit',
+                                                '_url': '?page=' ~ _app.page ~ '&action=edit&id=' ~ item.id
+                                            } %}
+
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'delete',
+                                                '_url': '?page=' ~ _app.page ~ '&action=delete&id=' ~ item.id
+                                            } %}
+                                        </td>
+                                        <td>
+                                            {{ item.checkbox }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </form>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="42" class="has-text-grey-light">
+                                    {{ _prohibited_domains|length }} {{ items }} / {{ _items_total }} {{ items_total }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- pagination -->
+    {% include 'includes/pagination.twig' with { 'params': _pagination } %}
+
+{% endblock %}

@@ -1,0 +1,295 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-large">
+        {{ help }}
+    </p>
+
+    <!-- button line -->
+    {% set _usage = [ _usage[0]|merge({'label': email_accounts}), _usage[1]|merge({'label': email_addresses}) ] %}
+    {% include 'includes/index_page_button_line.twig' with ({
+        '_usage': _usage,
+        '_add_btn_label': add_email_account,
+        '_add_btn_url': '?page=' ~ _app.page ~ '&action=add',
+        '_form_id': 'form-email-index'
+    }) %}
+
+    <!-- item table -->
+    {% if _email_accounts is empty %}
+        <div class="card">
+            <div class="card-content">
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            </div>
+        </div>
+    {% else %}
+
+        <form id="form-email-index" action="?page={{ _app.page }}&action=delete" method="post">
+
+            {% for main_domain in _email_accounts %}
+
+                <div class="has-margin-top-large"></div>
+
+                <div class="card">
+                    <div class="card-content">
+
+                        <h2 class="title is-5">{{ main_domain.label }}</h2>
+
+                        <div class="table-container">
+                            <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                                <thead>
+                                    <tr>
+                                        <th class="is-narrow" {% include 'includes/table_sorting.twig' with { '_table': main_domain.ascii, '_column': 'status' } %}>
+                                            S
+                                        </th>
+                                        <th colspan="2" {% include 'includes/table_sorting.twig' with { '_table': main_domain.ascii, '_column': 'email_utf8' } %}>
+                                            {{ email_account }}
+                                        </th>
+                                        <th style="width:300px;" {% include 'includes/table_sorting.twig' with { '_table': main_domain.ascii, '_column': 'mailbox_size' } %}>
+                                            {{ mailbox_size }}
+                                        </th>
+                                        <th class="is-narrow" {% include 'includes/table_sorting.twig' with { '_table': main_domain.ascii, '_column': 'is_catch_all' } %}>
+                                            {{ catch_all }}
+                                        </th>
+                                        <th class="is-narrow" {% include 'includes/table_sorting.twig' with { '_table': main_domain.ascii, '_column': 'protections_sort' } %}>
+                                            {{ protections }}
+                                        </th>
+                                        <th class="is-narrow">
+                                            {{ connection_data }}
+                                        </th>
+                                        <th class="is-narrow">
+                                            {{ options }}
+                                        </th>
+                                        <th class="is-narrow">
+                                            <input class="app-check-all" type="checkbox">
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in main_domain.items %}
+                                        <tr>
+                                            <td>
+                                                {% include 'includes/icon.twig' with { '_type': item.status } %}
+                                            </td>
+                                            <td class="has-no-wrap">
+                                                <span class="has-text-weight-bold">{{ item.email_utf8 }}</span>
+
+                                                {% if item.aliases is not empty %}
+                                                    <ul>
+                                                    {% for alias in item.aliases %}
+                                                        <li>
+                                                            <small>
+                                                                <span class="icon is-medium has-text-grey-light">
+                                                                    <i class="fas fa-angle-right"></i>
+                                                                </span>
+                                                            </small>
+                                                            {{ alias }}
+                                                        </li>
+                                                    {% endfor %}
+                                                    </ul>
+                                                {% endif %}
+
+                                                <p class="has-text-grey">
+                                                    {{ item.description }}
+                                                </p>
+                                            </td>
+                                            <td class="has-no-wrap">
+                                                {% if item.forwardings is not empty %}
+                                                    <span class="has-text-grey">{{ forward_to }}</span>
+                                                    <ul>
+                                                        {% for forwarding in item.forwardings %}
+                                                            <li>
+                                                                <small>
+                                                                    <span class="icon is-medium has-text-grey-light">
+                                                                        <i class="fas fa-angle-right"></i>
+                                                                    </span>
+                                                                </small>
+                                                                {{ forwarding }}
+                                                            </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                {% endif %}
+                                            </td>
+                                            <td class="has-no-wrap">
+                                                {% if item.is_forwarding_account %}
+                                                    <strong>{{ forwarding_account }}</strong>
+                                                    {% if item.has_significant_mailbox_size %}
+                                                        <span class="has-text-grey-light">
+                                                            ({{ item.usage.current }})
+                                                        </span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    {{ macros.usage_indicator(item.usage) }}
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ macros.true_false_indicator(item.is_catch_all) }}
+                                            </td>
+                                            <td class="has-no-wrap">
+                                                {% if not item.is_forwarding_account %}
+                                                    {% for protection in item.protections %}
+                                                        <span class="tag is-success">{{ protection }}</span>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a data-open-modal="app-modal-connection-data-{{ item.id }}">
+                                                    {{ show }}
+                                                </a>
+                                            </td>
+                                            <td class="has-no-wrap">
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'edit',
+                                                    '_url': '?page=' ~ _app.page ~ '&action=edit&id=' ~ item.id
+                                                } %}
+
+                                                {% if _is_roundcube %}
+                                                    {% if item.is_forwarding_account %}
+                                                        {% include 'includes/icon.twig' with {
+                                                            '_type': 'placeholder',
+                                                        } %}
+                                                    {% else %}
+                                                        {% include 'includes/icon.twig' with {
+                                                            '_type': 'webmail',
+                                                            '_url': _webmail_url ~ '/?_user=' ~ item.email_utf8
+                                                        } %}
+                                                    {% endif %}
+                                                {% endif %}
+
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'delete',
+                                                    '_url': '?page=' ~ _app.page ~ '&action=delete&id=' ~ item.id
+                                                } %}
+                                            </td>
+                                            <td>
+                                                {{ item.checkbox }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="42" class="has-text-grey-light">
+                                            {{ main_domain.items|length }} {{ items_total }}
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+
+            {% endfor %}
+
+        </form>
+
+        {% for main_domain in _email_accounts %}
+            {% for item in main_domain.items %}
+                <div id="app-modal-connection-data-{{ item.id }}" class="modal">
+                    <div class="modal-background"></div>
+                    <div class="modal-card">
+                        <header class="modal-card-head">
+                            <p class="modal-card-title">{{ connection_data }}</p>
+                            <button class="delete app-modal-close" type="button"></button>
+                        </header>
+                        <div class="modal-card-body">
+                            <p class="has-margin-bottom-small">
+                                {{ autoconfig_help }}
+                            </p>
+
+                            <p class="has-margin-bottom-small">
+                                {{ autoconfig_apple_help }}
+                                <span class="has-no-wrap">
+                                    <a href="http://autoconfig-apple.{{ main_domain.ascii }}/setup.mobileconfig?email={{ item.email_utf8 }}&protocol=imap" target="_blank">
+                                        {{ setup_imap_account }}
+                                    </a>
+                                    /
+                                    <a href="http://autoconfig-apple.{{ main_domain.ascii }}/setup.mobileconfig?email={{ item.email_utf8 }}&protocol=pop3" target="_blank">
+                                        {{ setup_pop3_account }}
+                                    </a>
+                                </span>
+                            </p>
+
+                            <p class="has-margin-bottom-small">
+                                {{ manual_config_help }}
+                            </p>
+
+                            <div class="table-container">
+                                <table class="table is-centered is-striped is-hoverable is-fullwidth">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>{{ inbox }}</th>
+                                            <th>{{ outbox }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th>
+                                                {{ server }} <sup>*</sup>
+                                            </th>
+                                            <td colspan="2" class="has-no-wrap">
+                                                {{ _email_server }}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                {{ port_starttls }}
+                                            </th>
+                                            <td>
+                                                143 IMAP<br> 110 POP3
+                                            </td>
+                                            <td>
+                                                587 / 25 SMTP
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                {{ port_tls }}
+                                            </th>
+                                            <td>
+                                                993 IMAP<br> 995 POP3
+                                            </td>
+                                            <td>
+                                                &#x2014;
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                {{ username }}
+                                            </th>
+                                            <td colspan="2" class="has-no-wrap">
+                                                {% if item.email_utf8 != item.email_ascii %}
+                                                    {{ item.email_utf8 }}<br>
+                                                    {{ item.email_ascii }}
+                                                {% else %}
+                                                    {{ item.email_ascii }}
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <p class="has-text-centered">
+                                <sup>*</sup> <small>{{ can_use_tls_domain }}</small>
+                            </p>
+                        </div>
+                        <footer class="modal-card-foot">
+                            {{ forms.button({'label': close, 'class': 'app-modal-close', 'type': 'button' }) }}
+                        </footer>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+    {% endif %}
+
+
+{% endblock %}

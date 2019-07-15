@@ -1,0 +1,357 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script src="/theme/bulma/assets/js/page_domain_index.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    {% if _app.area == 'admin' %}
+        <p class="has-margin-bottom-large">
+            {{ help }}
+        </p>
+    {% else %}
+        <div class="columns has-margin-bottom-large">
+            <div class="column">
+                {{ help }}
+            </div>
+            <div class="column is-narrow">
+                {{ forms.button({
+                    'label': view_web_server_logs,
+                    'style': 'primary',
+                    'class': 'is-outlined',
+                    'url': '?page=user_domain_logs'
+                }) }}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- button line -->
+    {% if _app.area == 'user' %}
+        {% if _user.can_manage_main_domains %}
+            {% set _usage = [ _usage[0]|merge({'label': domains}), _usage[1]|merge({'label': subdomains}) ] %}
+        {% else %}
+            {% set _usage = [ _usage[0]|merge({'label': subdomains}) ] %}
+        {% endif %}
+    {% else %}
+        {% set _usage = false %}
+    {% endif %}
+
+    {% include 'includes/index_page_button_line.twig' with ({
+        '_usage': _usage,
+        '_add_btn_label': add_domain,
+        '_add_btn_url': '?page=' ~ _app.page ~ '&action=' ~ (_app.area == 'admin' ? 'add_select_user' : 'add'),
+        '_form_id': 'form-domains'
+    }) %}
+
+    <!-- view options -->
+    <form action="?page={{ _app.page }}" method="post">
+        <input type="hidden" name="update_view" value="1">
+
+        <div class="card has-margin-bottom-medium">
+            <div class="card-content">
+                <div class="level">
+                    <div class="level-left">
+                        <div class="level-item">
+                            <strong>{{ view_options }}</strong>
+                        </div>
+                    </div>
+                    <div class="level-right">
+                        <div class="level-item">
+                            <label>
+                                <input type="checkbox" name="show_subdomains" value="1" {{ _show_subdomains ? 'checked' }}> {{ subdomains }}
+                            </label>
+                        </div>
+                        <div class="level-item">
+                            <label>
+                                <input type="checkbox" name="show_domain_target" value="1" {{ _show_domain_target ? 'checked' }}> {{ domain_target }}
+                            </label>
+                        </div>
+                        <div class="level-item is-hidden-mobile has-margin-right-large">
+                            <!-- spacer on non-mobile -->
+                        </div>
+                        <div class="level-item">
+                            {{ forms.input({
+                                'name': 'search',
+                                'value': _search,
+                                'addons': {
+                                    'left': {
+                                        'type': 'select',
+                                        'select': {
+                                            'name': 'search_option',
+                                            'options': _search_options,
+                                            'selected': _search_options_selected,
+                                        }
+                                    }
+                                }
+                            }) }}
+                        </div>
+                        <div class="level-item">
+                            {{ forms.button({
+                                'label': view,
+                                'style': 'grey',
+                                'icon': 'fas fa-search'
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- item table -->
+    {% if _domains is empty %}
+        <div class="card">
+            <div class="card-content">
+
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+
+            </div>
+        </div>
+    {% else %}
+        <div class="card">
+            <div class="card-content">
+
+                <form id="form-domains" action="?page={{ _app.page }}&action=delete" method="post">
+                    <div class="table-container">
+                        <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                            <thead>
+                                <tr>
+                                    <th class="is-narrow" {% include 'includes/table_sorting.twig' with { '_column': 'status' } %}>
+                                        S
+                                    </th>
+                                    <th colspan="{{ _app.area == 'admin' ? 4 : 3 }}" {% include 'includes/table_sorting.twig' with { '_column': 'domain_utf8' } %}>
+                                        {{ domain }}
+                                    </th>
+                                    {% if _app.area == 'admin' %}
+                                        <th {% include 'includes/table_sorting.twig' with { '_column': 'owner' } %}>
+                                            {{ owner }}
+                                        </th>
+                                    {% endif %}
+                                    {% if _show_domain_target %}
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'target' } %}>
+                                        {{ domain_target }}
+                                    </th>
+                                    {% endif %}
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'security' } %}>
+                                        {{ security }}
+                                    </th>
+                                    {% if _app.area == 'admin' or _user.has_php %}
+                                        <th {% include 'includes/table_sorting.twig' with { '_column': 'php_version' } %}>
+                                            {{ php_version }}
+                                        </th>
+                                    {% endif %}
+                                    <th class="is-narrow">
+                                        {{ options }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        <input class="app-check-all" type="checkbox">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in _domains %}
+                                    <tr>
+                                        <td>
+                                            {% include 'includes/icon.twig' with { '_type': item.status } %}
+                                        </td>
+                                        <td class="has-no-wrap">
+                                            <a href="{{ item.url }}" target="_blank" rel="nofollow noopener noreferrer">
+                                                {% if _is_indented %}
+                                                    {% if item.is_subdomain %}
+                                                        <small>
+                                                            <span class="icon is-medium has-text-grey-light">
+                                                                <i class="fas fa-angle-right"></i>
+                                                            </span>
+                                                        </small>
+
+                                                        {{ item.domain_utf8 }}
+                                                    {% else %}
+                                                        <b>{{ item.domain_utf8 }}</b>
+                                                    {% endif %}
+                                                {% else %}
+                                                    {{ item.domain_utf8 }}
+                                                {% endif %}
+                                            </a>
+                                        </td>
+                                        <td class="is-narrow">
+                                            {% if item.is_disabled %}
+                                                <div class="app-tooltip" data-tippy-content="{{ disabled }}">
+                                                    <span class="icon is-medium has-text-danger">
+                                                        <i class="fas fa-lock"></i>
+                                                    </span>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                        {% if _app.area == 'admin' %}
+                                            <td class="is-narrow">
+                                                {% if item.notes %}
+                                                    <div class="app-tooltip-mandatory" data-tippy-content="{{ item.notes|e }}">
+                                                        <span class="icon is-medium has-text-grey">
+                                                            <i class="fas fa-comment-alt"></i>
+                                                        </span>
+                                                    </div>
+                                                {% endif %}
+                                            </td>
+                                        {% endif %}
+                                        <td class="is-narrow">
+                                            {% set additional_domain_info %}
+                                                <table class="table is-narrow has-margin-top-xsmall">
+                                                    <tr>
+                                                        <th>{{ added_on }}</th>
+                                                        <td>{{ item.added_on }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>{{ email_domain }}</th>
+                                                        <td>{{ item.is_email_domain ? yes : no }}</td>
+                                                    </tr>
+                                                    {% if not item.is_subdomain %}
+                                                        <tr>
+                                                            <th>{{ subdomain_count }}</th>
+                                                            <td>{{ item.subdomain_count }}</td>
+                                                        </tr>
+                                                        {% if not item.dkim_record is empty %}
+                                                            <tr>
+                                                                <td colspan="2">
+                                                                    {{ forms.input_wrapped({
+                                                                        'label': dkim_dns_record,
+                                                                        'value': item.dkim_record|escape,
+                                                                        'type': 'text',
+                                                                        'is_readonly': true,
+                                                                        'addons': {
+                                                                            'right': {
+                                                                                'type': 'action',
+                                                                                'label': copy,
+                                                                                'action': 'app-copy-to-clipboard'
+                                                                            }
+                                                                        }
+                                                                    }) }}
+                                                                </td>
+                                                            </tr>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </table>
+                                            {% endset %}
+                                            <div class="app-domain-info" data-tippy-content="{{ additional_domain_info|e }}">
+                                                <span class="icon is-medium has-text-grey">
+                                                    <i class="fas fa-info-circle"></i>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        {% if _app.area == 'admin' %}
+                                            <td>
+                                                <a href="?page=admin_accounts_user&id={{ item.id_user }}&action=user_login" target="_blank" rel="nofollow noopener noreferrer">
+                                                    {{ item.username }}
+                                                </a>
+                                            </td>
+                                        {% endif %}
+                                        {% if _show_domain_target %}
+                                        <td>
+                                            {% if item.is_redirect %}
+                                                <span class="has-text-grey-light has-margin-right-small">
+                                                    &#10132; {{ item.target_auxiliary }}
+                                                </span>
+                                                {{ item.target }}
+                                            {% else %}
+                                                <span class="has-text-grey-light">{{ item.target_auxiliary }}</span>
+                                                {{- item.target }}
+                                            {% endif %}
+                                        </td>
+                                        {% endif %}
+                                        <td class="is-narrow">
+                                            {% if item.is_certificate %}
+                                                <span class="icon is-medium has-text-warning app-tooltip-mandatory" data-tippy-content="{{ ssl_certificate }}">
+                                                    <i class="fas fa-lock"></i>
+                                                </span>
+                                            {% elseif item.is_lets_encrypt %}
+                                                <span class="icon is-medium has-text-info app-tooltip-mandatory" data-tippy-content="{{ lets_encrypt }}">
+                                                    <i class="fas fa-lock"></i>
+                                                </span>
+                                            {% endif %}
+
+                                            {% if item.is_force_https %}
+                                                <span class="tag is-success app-tooltip-mandatory" data-tippy-content="{{ http_to_https }}">
+                                                    HTTP &#10132; HTTPS
+                                                </span>
+                                            {% endif %}
+
+                                            {% if item.is_hsts %}
+                                                <span class="tag is-success app-tooltip-mandatory" data-tippy-content="HTTP Strict Transport Security">
+                                                    HSTS
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        {% if _app.area == 'admin' or _user.has_php %}
+                                            <td class="is-narrow">
+                                                {% if item.php_version %}
+                                                    {{ item.php_version }}
+                                                {% else %}
+                                                    <span class="has-text-grey-light">
+                                                        {{ _php_default_version }} | {{ default }}
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                        {% endif %}
+                                        <td class="is-narrow">
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'edit',
+                                                '_url': '?page=domains&action=edit&id=' ~ item.id
+                                            } %}
+
+                                            {% if _app.area == 'admin' %}
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'user_edit',
+                                                    '_url': '?page=admin_accounts_user&action=edit&id=' ~ item.id_user
+                                                } %}
+                                            {% endif %}
+
+                                            {% if _app.area == 'admin' or _user.has_dns_editor %}
+                                                {% if item.is_subdomain %}
+                                                    {% include 'includes/icon.twig' with {
+                                                        '_type': 'placeholder'
+                                                    } %}
+                                                {% else %}
+                                                    {% include 'includes/icon.twig' with {
+                                                        '_type': item.is_custom_dns ?  'dns_active' : 'dns',
+                                                        '_url': '?page=dns_editor&action=edit&id=' ~ item.id
+                                                    } %}
+                                                {% endif %}
+                                            {% endif %}
+
+                                            {% if item.is_deleatable %}
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'delete',
+                                                    '_url': '?page=domains&action=delete&id=' ~ item.id
+                                                } %}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if item.is_deleatable %}
+                                                {{ item.checkbox }}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            <tfoot>
+                                <tr>
+                                    <td colspan="42" class="has-text-grey-light">
+                                        {{ _domains|length }} {{ items_total }}
+                                    </td>
+                                <tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    {% endif %}
+
+{% endblock %}

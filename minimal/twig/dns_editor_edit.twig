@@ -1,0 +1,261 @@
+{% extends 'base/intern.twig' %}
+
+
+{% block page_scripts %}
+    <script>
+        var records = {{ _records_json }};
+    </script>
+
+	<script id="app-record-template" type="text/x-handlebars-template">
+        <tr class="app-record-row">
+            <td>
+                {{ forms.input({
+                    'is_template': true,
+                    'name': 'host',
+                    'is_required': true,
+                }) }}</td>
+            <td>
+                {{ forms.input({
+                    'is_template': true,
+                    'name': 'ttl',
+                    'type': 'number',
+                    'min': 1,
+                    'is_required': true,
+                }) }}
+            </td>
+            <td>
+                {{ forms.select({
+                    'is_template': true,
+                    'name': 'type',
+                    'options': _dns_record_types
+                }) }}
+            </td>
+            <td>
+                {{ forms.input({
+                    'is_template': true,
+                    'name': 'value',
+                    'is_required': true,
+                }) }}
+            </td>
+            <td>
+                {{ forms.button({
+                    'label': remove,
+                    'style': 'secondary',
+                    'type': 'button',
+                    'class': 'app-remove-record'
+                }) }}
+            </td>
+        </tr>
+	</script>
+
+    <script src="/theme/bulma/assets/js/page_dns_editor_edit.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-medium">
+        {{ help }}
+    </p>
+
+    <p class="has-margin-bottom-medium">
+        <strong>{{ dns_zone_for_domain }}:</strong>
+        <a href="?page=domains&action=edit&id={{ _id }}">
+            {{ _domain }}
+        </a>
+
+        {% if _is_modified %}
+            {{ macros.tag(modified, 'is-warning') }}
+        {% endif %}
+    </p>
+
+    <p class="has-margin-bottom-large">
+        <strong>DKIM:</strong>
+        {{ help_dkim }}
+
+        {% if not _dkim_record is empty %}
+
+            {% set dkim_record_tooltip %}
+                {{ forms.input_wrapped({
+                    'label': dkim_dns_record,
+                    'value': _dkim_record|escape,
+                    'type': 'text',
+                    'is_readonly': true,
+                    'addons': {
+                        'right': {
+                            'type': 'action',
+                            'label': copy,
+                            'action': 'app-copy-to-clipboard'
+                        }
+                    }
+                }) }}
+            {% endset %}
+
+            <br>
+            {{ help_dkim_external|format('<a class="has-text-link app-dkim-info" data-tippy-content="' ~ dkim_record_tooltip|escape ~ '">' ~ show ~ '</a>') }}
+        {% endif %}
+    </p>
+
+    <!-- item table -->
+    <form id="app-edit-dns-form" action="?page={{ _app.page }}&action=edit" method="post">
+        <input type="hidden" name="update_zone" value="1">
+        <input type="hidden" name="id" value="{{ _id }}">
+        <input type="hidden" name="records" value="">
+
+        <div class="table-container has-margin-bottom-small">
+            <table class="table is-fullwidth is-striped is-hoverable">
+                <thead>
+                    <tr>
+                        <th style="min-width: 225px;">
+                            {{ host }}
+                        </th>
+                        <th style="min-width: 125px; width: 125px">
+                            {{ ttl }}
+                        </th>
+                        <th class="is-narrow">
+                            {{ record_type }}
+                        </th>
+                        <th style="min-width: 225px;">
+                            {{ value }}
+                        </th>
+                        <th class="is-narrow">
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="app-record-container">
+                    <!-- soa -->
+                    <tr>
+                        <td>{{ _soa.host }}</td>
+                        <td>
+                            {{ forms.input({
+                                'name': 'soa_ttl',
+                                'value': _soa.ttl,
+                                'type': 'number',
+                                'min': 1
+                            }) }}
+
+                            {{ forms.button({
+                                'label': apply,
+                                'type': 'button',
+                                'icon': 'fas fa-angle-double-down',
+                                'id': 'app-apply-ttl-to-all',
+                                'class': 'is-fullwidth'
+                            }) }}
+                        </td>
+                        <td>
+                            SOA
+                        </td>
+                        <td>
+                            {{ forms.input_wrapped({
+                                'help': primary_name_server,
+                                'name': 'soa_primary_name_server',
+                                'value': _soa.primary_name_server,
+                                'is_required': true
+                            }) }}
+                            {{ forms.input_wrapped({
+                                'help': email_of_responsible_person,
+                                'name': 'soa_rname',
+                                'value': _soa.rname,
+                                'is_required': true
+                            }) }}
+                            {{ forms.input_wrapped({
+                                'help': refresh,
+                                'name': 'soa_refresh',
+                                'value': _soa.refresh,
+                                'type': 'number',
+                                'min': 1,
+                                'is_required': true
+                            }) }}
+                            {{ forms.input_wrapped({
+                                'help': retry,
+                                'name': 'soa_retry',
+                                'value': _soa.retry,
+                                'type': 'number',
+                                'min': 1,
+                                'is_required': true
+                            }) }}
+                            {{ forms.input_wrapped({
+                                'help': expire,
+                                'name': 'soa_expire',
+                                'value': _soa.expire,
+                                'type': 'number',
+                                'min': 1,
+                                'is_required': true
+                            }) }}
+                            {{ forms.input_wrapped({
+                                'help': minimum,
+                                'name': 'soa_minimum',
+                                'value': _soa.minimum,
+                                'type': 'number',
+                                'min': 1,
+                                'is_required': true
+                            }) }}
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colspan="42" class="has-text-centered">
+                            {{ forms.button({
+                                'label': add_record,
+                                'type': 'button',
+                                'class': 'app-add-record'
+                            }) }}
+                        </td>
+                    </tr>
+
+                    <!-- rows added by javascript -->
+
+                    <tr id="app-add-records-before">
+                        <td colspan="42" class="has-text-centered">
+                            {{ forms.button({
+                                'label': add_record,
+                                'type': 'button',
+                                'class': 'app-add-record'
+                            }) }}
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="42"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        {% include 'includes/cta.twig' with {
+            '_back': { 'label': back_to_search, 'target': 'dns_editor' },
+            '_reset': _is_modified,
+            '_confirm': true
+        } %}
+    </form>
+
+
+    <form action="?page={{ _app.page }}&action=edit" method="post">
+        <input type="hidden" name="reset_zone" value="1">
+        <input type="hidden" name="id" value="{{ _id }}">
+
+        <div id="app-modal-reset-settings" class="modal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">{{ reset_settings }}</p>
+                    <button class="delete app-modal-close" type="button"></button>
+                </header>
+                <div class="modal-card-body">
+                    <p class="has-text-centered">
+                        {{ reset_settings_confirmation }}
+                    </p>
+                </div>
+                <footer class="modal-card-foot">
+                    {{ forms.button({'label': yes, 'style': 'primary' }) }}
+                    {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+                </footer>
+            </div>
+        </div>
+    </form>
+
+
+{% endblock %}

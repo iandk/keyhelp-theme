@@ -1,0 +1,155 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-large">
+        {{ help }}
+    </p>
+
+    <!-- button line -->
+    {% include 'includes/index_page_button_line.twig' with ({
+        '_usage': _usage|merge({'label': ftp_users}),
+        '_add_btn_label': add_ftp,
+        '_add_btn_url': '?page=user_ftp&action=add',
+        '_form_id': 'form-ftp-index'
+    }) %}
+
+    <!-- item table -->
+    <div class="card">
+        <div class="card-content">
+
+            {% if _ftp_items is empty %}
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+
+                <form id="form-ftp-index" action="?page=user_ftp&action=delete" method="post">
+                    <div class="table-container">
+                        <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                            <thead>
+                                <tr>
+                                    <th class="is-narrow" {% include 'includes/table_sorting.twig' with { '_column': 'status' } %}>
+                                        S
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'username' } %}>
+                                        {{ username }}
+                                    </th>
+                                    <th {% include 'includes/table_sorting.twig' with { '_column': 'home_directory' } %}>
+                                        {{ home_directory }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        {{ connection_data }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        {{ options }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        <input class="app-check-all" type="checkbox">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in _ftp_items %}
+                                    <tr>
+                                        <td>
+                                            {% include 'includes/icon.twig' with { '_type': item.status } %}
+                                        </td>
+                                        <td>
+                                            {{ item.username }}<br>
+                                            <span class="has-text-grey">
+                                                {{ item.description|e }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {{ item.home_directory }}
+                                        </td>
+                                        <td>
+                                            <a data-open-modal="app-modal-connection-data-{{ item.id }}">
+                                                {{ show }}
+                                            </a>
+                                        </td>
+                                        <td class="is-narrow">
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'edit',
+                                                '_url': '?page=user_ftp&action=edit&id=' ~ item.id
+                                            } %}
+
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'delete',
+                                                '_url': '?page=user_ftp&action=delete&id=' ~ item.id
+                                            } %}
+                                        </td>
+                                        <td>
+                                            {{ item.checkbox }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="42" class="has-text-grey-light">
+                                        {{ _ftp_items|length }} {{ items_total }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </form>
+
+                {% for item in _ftp_items %}
+                    <div id="app-modal-connection-data-{{ item.id }}" class="modal">
+                        <div class="modal-background"></div>
+                        <div class="modal-card">
+                            <header class="modal-card-head">
+                                <p class="modal-card-title">{{ connection_data }}</p>
+                                <button class="delete app-modal-close" type="button"></button>
+                            </header>
+                            <div class="modal-card-body">
+                                <div class="table-container">
+                                    <table class="table is-centered is-striped is-hoverable">
+                                        <tbody>
+                                            <tr>
+                                                <th>{{ server }} <sup>*</sup></th>
+                                                <td>{{ _ftp_server }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>{{ port }}</th>
+                                                <td>{{ _ftp_port }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>{{ protocol }}</th>
+                                                <td>{{ _ftp_protocol }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>{{ encryption }}</th>
+                                                <td>{{ _ftp_encryption }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>{{ username }}</th>
+                                                <td>{{ item.username }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <p class="has-text-centered">
+                                    <sup>*</sup> <small>{{ can_use_tls_domain }}</small>
+                                </p>
+                            </div>
+                            <footer class="modal-card-foot">
+                                {{ forms.button({'label': close, 'class': 'app-modal-close', 'type': 'button' }) }}
+                            </footer>
+                        </div>
+                    </div>
+                {% endfor %}
+
+
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

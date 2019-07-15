@@ -1,0 +1,188 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    {% include 'includes/card_start.twig' %}
+
+    <form action="?page=ssl_certificates&action=edit" method="post" autocomplete="off" enctype="multipart/form-data">
+        <input type="hidden" name="submit" value="1">
+        <input type="hidden" name="id" value="{{ _id }}">
+
+        {{ forms.input_wrapped({
+            'label': certificate_name,
+            'help': certificate_name_help,
+            'name': 'certificate_name',
+            'type': 'text',
+            'value': _certificate_name,
+            'is_required': true
+        }) }}
+
+        {% if _app.area == 'admin' %}
+            {{ forms.select_wrapped({
+                'label': owner,
+                'name': 'owner',
+                'options': _owners,
+                'selected': _owners_selected
+            }) }}
+        {% endif %}
+
+        <div class="table-container">
+            <table class="table is-fullwidth">
+                <thead>
+                    <tr>
+                        <th colspan="2">
+                            {{ certificate_information }}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            {{ key_length }}
+                        </td>
+                        <td>
+                            {{ _key_length ? _key_length : '&#x2014;' }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{ country }}
+                        </td>
+                        <td>
+                            {{ _country ? _country : '&#x2014;' }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{ state }}
+                        </td>
+                        <td>
+                            {{ _state ? _state : '&#x2014;' }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{ locality }}
+                        </td>
+                        <td>
+                            {{ _locality ? _locality : '&#x2014;' }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{ organization }}
+                        </td>
+                        <td>
+                            {{ _organization ? _organization : '&#x2014;' }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{ organization_unit }}
+                        </td>
+                        <td>
+                            {{ _organization_unit ? _organization_unit : '&#x2014;' }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{ domain }}
+                        </td>
+                        <td>
+                            {{ _domain ? _domain : '&#x2014;' }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{ alternative_domains }}
+                        </td>
+                        <td>
+                            {{ _alternative_domains ? _alternative_domains : '&#x2014;' }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{ email }}
+                        </td>
+                        <td>
+                            {{ _email ? _email : '&#x2014;' }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{ valid_from }}
+                        </td>
+                        <td>
+                            {{ _valid_from ? _valid_from : '&#x2014;' }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{ valid_till }}
+                        </td>
+                        <td>
+                            {{ _valid_till ? _valid_till : '&#x2014;' }}
+                            {% if _is_expired %}
+                                {{ macros.tag(expired, 'is-danger') }}
+                            {% elseif _is_expiring_soon %}
+                                {{ macros.tag(expires_soon, 'is-warning') }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        {{ forms.label_wrapped({
+            'label': update_certificate_components,
+            'help': update_certificate_components_help
+        }) }}
+
+        <!-- certificate -->
+        {{ forms.textarea_wrapped({
+            'label': certificate,
+            'name': 'text_certificate'
+        }) }}
+
+        {{ forms.upload_wrapped({
+            'name': 'file_certificate',
+            'button_label': choose_file
+        }) }}
+
+        <!-- ca certificate -->
+        {{ forms.textarea_wrapped({
+            'label': ca_certificate,
+            'name': 'text_ca_certificate'
+        }) }}
+
+        {{ forms.upload_wrapped({
+            'name': 'file_ca_certificate',
+            'button_label': choose_file
+        }) }}
+
+        {% include 'includes/cta.twig' with { '_back': { 'target': 'ssl_certificates' }, '_confirm': true } %}
+    </form>
+
+    <div class="has-margin-large">
+        <hr class="has-background-grey-light">
+    </div>
+
+    <div class="content">
+        <strong>{{ csr_long }}</strong>
+        <pre>{{ _csr ? _csr : '- ' ~ component_not_exist ~ ' -' }}</pre>
+
+        <strong>{{ private_key }}</strong>
+        <pre>{{ _private_key ? _private_key : '- ' ~ component_not_exist ~ ' -' }}</pre>
+
+        <strong>{{ certificate }}</strong>
+        <pre>{{ _certificate ? _certificate : '- ' ~ component_not_exist ~ ' -' }}</pre>
+
+        <strong>{{ ca_certificate }}</strong>
+        <pre>{{ _ca_certificate ? _ca_certificate : '- ' ~ component_not_exist ~ ' -' }}</pre>
+    </div>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}

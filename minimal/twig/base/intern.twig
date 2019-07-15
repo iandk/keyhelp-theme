@@ -1,0 +1,90 @@
+{% extends 'base/base.twig' %}
+
+
+
+{% block body_content %}
+
+<!-- header -->
+<header id="header" class="is-hidden-desktop">
+    <nav id="top-nav">
+        <div class="level is-mobile">
+            <div class="level-left">
+                
+            </div>
+            <div class="level-right">
+                <a id="app-sidebar-toggle" class="level-item is-hidden-desktop">
+                    <span id="app-sidebar-toggle-icon" class="icon is-large">
+                        <i class="fas fa-bars fa-2x"></i>
+                    </span>
+                    <span id="app-sidebar-toggle-icon-active" class="icon is-large is-hidden">
+                        <i class="fas fa-times fa-2x"></i>
+                    </span>
+                </a>
+            </div>
+        </div>
+    </nav>
+</header>
+
+
+<!-- user menu -->
+<div id="user-menu" class="is-hidden">
+    <a href="?page=profile" class="dropdown-item">
+        <span class="icon is-medium">
+            <i class="fas fa-user"></i>
+        </span>
+        {{ profile }}
+    </a>
+    <hr class="dropdown-divider">
+    <a href="?page=logout" class="dropdown-item">
+        <span class="icon is-medium">
+            <i class="fas fa-power-off"></i>
+        </span>
+        {{ logout }}
+    </a>
+</div>
+
+
+<!-- sidebar -->
+<section id="sidebar">
+    {% include '/includes/main_nav.twig' %}
+</section>
+
+<div id="sidebar-overlay"></div>
+
+
+<!-- main wrapper -->
+<section id="content-wrapper">
+    <!-- content -->
+    <div id="content">
+        <div class="content-title">
+            <h1 class="title is-4">{{ content_title }}</h1>
+        </div>
+
+        {% include 'includes/events.twig' %}
+
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- footer -->
+    <footer id="footer">
+        <div class="content has-text-centered">
+            {% if _whitelabel.footer %}
+                {{ _whitelabel.footer|raw }}
+            {% else %}
+                <p>
+                    {% if _app.footer_icon %}
+                        Made with <i class="{{ _app.footer_icon }}" style="color: #AE4852"></i> in Thuringia
+                    {% else %}
+                        Made with <img class="svg-heart" src="theme/bulma/assets/img/heart.svg"> in Thuringia
+                    {% endif %}
+                </p>
+                <p>
+                    {{ _app.footer|raw }}
+                </p>
+            {% endif %}
+        </div>
+    </footer>
+</section>
+
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    {% include 'includes/delete_page.twig' with {
+        '_action': '?page=user_scheduled_tasks&action=delete',
+        '_back_page': 'user_scheduled_tasks',
+        '_config': {
+            'type': {
+                'label': task_type
+            },
+            'command': {
+                'label': command
+            },
+            'description': {
+                'label': description
+            },
+            'schedule': {
+                'label': schedule,
+            },
+            'notification': {
+                'label': notification,
+            },
+        },
+        '_items': _scheduled_task_items
+    } %}
+
+{% endblock %}

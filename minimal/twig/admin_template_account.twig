@@ -1,0 +1,154 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-large">
+        {{ help }}
+    </p>
+
+    <!-- button line -->
+    {% include 'includes/index_page_button_line.twig' with ({
+        '_add_btn_label': add_account_template,
+        '_add_btn_url': '?page=' ~ _app.page ~ '&action=add',
+        '_form_id': 'form-template-account'
+    }) %}
+
+    <!-- item table -->
+    <div class="card">
+        <div class="card-content">
+
+            {% if _account_templates is empty %}
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            {% else %}
+
+                <form id="form-template-account" action="?page={{ _app.page }}&action=delete" method="post">
+                    <div class="table-container">
+                        <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        {{ name }}
+                                    </th>
+                                    <th>
+                                        {{ disk_space }}
+                                    </th>
+                                    <th>
+                                        {{ traffic }}
+                                    </th>
+                                    <th>
+                                        {{ domains }}
+                                    </th>
+                                    <th>
+                                        {{ subdomains }}
+                                    </th>
+                                    <th>
+                                        {{ email_accounts }}
+                                    </th>
+                                    <th>
+                                        {{ email_addresses }}
+                                    </th>
+                                    <th>
+                                        {{ databases }}
+                                    </th>
+                                    <th>
+                                        {{ ftp_users }}
+                                    </th>
+                                    <th>
+                                        {{ scheduled_tasks }}
+                                    </th>
+                                    <th>
+                                        {{ permissions }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        {{ options }}
+                                    </th>
+                                    <th class="is-narrow">
+                                        <label>
+                                            <input class="app-check-all" type="checkbox">
+                                        </label>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in _account_templates %}
+                                    <tr>
+                                        <td>
+                                            <strong>
+                                                {{ item.name }}
+                                            </strong>
+                                        </td>
+                                        <td>
+                                            {{ macros.amount_indicator(item.disk_space) }}
+                                        </td>
+                                        <td>
+                                            {{ macros.amount_indicator(item.traffic) }}
+                                        </td>
+                                        <td>
+                                            {{ macros.amount_indicator(item.domains) }}
+                                        </td>
+                                        <td>
+                                            {{ macros.amount_indicator(item.subdomains) }}
+                                        </td>
+                                        <td>
+                                            {{ macros.amount_indicator(item.email_accounts) }}
+                                        </td>
+                                        <td>
+                                            {{ macros.amount_indicator(item.email_addresses) }}
+                                        </td>
+                                        <td>
+                                            {{ macros.amount_indicator(item.databases) }}
+                                        </td>
+                                        <td>
+                                            {{ macros.amount_indicator(item.ftp_users) }}
+                                        </td>
+                                        <td>
+                                            {{ macros.amount_indicator(item.scheduled_tasks) }}
+                                        </td>
+                                        <td class="has-no-wrap">
+                                            {% for permission in item.permissions %}
+                                                {{ macros.true_false_indicator(permission.is_enabled) }}
+                                                {{ permission.name }}
+                                                <br>
+                                            {% endfor %}
+                                        </td>
+                                        <td class="is-narrow">
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'edit',
+                                                '_url': '?page=' ~ _app.page ~ '&action=edit&id=' ~ item.id
+                                            } %}
+
+                                            {% include 'includes/icon.twig' with {
+                                                '_type': 'delete',
+                                                '_url': '?page=' ~ _app.page ~ '&action=delete&id=' ~ item.id
+                                            } %}
+                                        </td>
+                                        <td>
+                                            {{ item.checkbox }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="42" class="has-text-grey-light">
+                                        {{ _account_templates|length }} {{ items_total }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </form>
+
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- back -->
+    {% include 'includes/cta.twig' with { '_back': { 'target': 'admin_configuration' } } %}
+
+{% endblock %}

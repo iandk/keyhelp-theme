@@ -1,0 +1,75 @@
+{% extends 'base/intern.twig' %}
+
+
+{% block page_scripts %}
+    <script>
+        var domains = {{ _domains_json }};
+    </script>
+
+    <script id="app-domain-template" type="text/x-handlebars-template">
+        <tr>
+            <td class="has-no-wrap">
+                <a href="?page=dns_editor&action=edit&id={% verbatim %}{{ id }}{% endverbatim %}">
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'edit',
+                    } %}
+                    {% verbatim %}{{ domain }}{% endverbatim %}
+                </a>
+            </td>
+            <td class="is-narrow">
+                {% verbatim %}
+                {{# if is_modified}}
+                    {% endverbatim %}{{ macros.tag(modified, 'is-warning') }}{% verbatim %}
+                {{/ if }}
+                {% endverbatim %}
+            </td>
+        </tr>
+	</script>
+
+    <script src="/theme/bulma/assets/js/page_dns_editor_search.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-large">
+        {{ help }}
+    </p>
+
+    {% include 'includes/card_start.twig' with { '_type': 'search' } %}
+
+        {{ forms.input_wrapped({
+            'label': search,
+            'name': 'search',
+            'type': 'text',
+        }) }}
+
+        <div class="has-margin-top-large"></div>
+
+        {{ forms.label_wrapped({
+            'label': domain_list,
+            'help': domain_list_help
+        }) }}
+
+        <!-- no items -->
+        <div id="app-no-items-available" style="display: none">
+            <div class="has-text-centered has-text-grey">
+                - {{ no_items_available }} -
+            </div>
+        </div>
+
+        <!-- item table -->
+        <div id="app-item-table" style="display: none">
+            <div class="table-container">
+                 <table class="table is-fullwidth is-striped is-hoverable">
+                    <tbody id="app-domain-container">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}

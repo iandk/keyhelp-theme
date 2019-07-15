@@ -1,0 +1,13 @@
+Version:    1.4.0
+
+Releases:   https://github.com/utatti/perfect-scrollbar/releases
+
+Homepage:   https://github.com/utatti/perfect-scrollbar
+
+Notes:      When updating the perfect-scrollbar version please note the following:
+            - Modify the perfect-scrollbar.css
+                - Set all background colors (beside transparent): "background-color: #f3f3fa;"
+                - Set all radius: "border-radius: 1px;"
+                - Set Opacity of rails: "opacity: 0.2;"
+                - Remove the background-color for the hover state
+            - There is no min.css in the repo, so I have to minify by myself

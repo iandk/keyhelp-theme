@@ -1,0 +1,45 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_css %}
+    <link rel="stylesheet" href="/theme/bulma/assets/vendor/codemirror/codemirror.min.css?{{ _app.cache_busting }}">
+{% endblock %}
+
+
+
+{% block page_scripts %}
+    <script src="/theme/bulma/assets/vendor/codemirror/codemirror.min.js?{{ _app.cache_busting }}"></script>
+    <script>
+        var fileExtension = '{{ _extension }}'.toLowerCase();
+        var cacheBusting = '{{ _cache_busting }}';
+    </script>
+    <script src="/theme/bulma/assets/js/page_file_manager_edit.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    {% include 'includes/card_start.twig' with { '_is_wide': true } %}
+
+        <form action="?page={{ _app.page }}&action=edit" method="post">
+            <input type="hidden" name="submit" value="1">
+            <input type="hidden" name="id" value="{{ _name }}">
+            <input type="hidden" name="working_dir" value="{{ _working_dir }}">
+
+            <p class="has-text-centered">{{ current_path }}</p>
+            <p class="app-current-path has-text-centered has-text-weight-bold has-margin-top-xsmall has-margin-bottom-medium">{{ _current_path }}</p>
+
+            {{ forms.textarea_wrapped({
+                'name': 'content',
+                'rows': 20,
+                'value': _content
+            }) }}
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': _app.page ~ '&change_dir=' ~ _working_dir }, '_reset': _is_custom_index, '_confirm': true } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    {% include 'includes/delete_page.twig' with {
+        '_action': '?page=' ~ _app.page ~ '&action=' ~ _action,
+        '_back_page': _app.page,
+        '_config': {
+            'name': {
+                'label': name
+            },
+            'disk_space': {
+                'label': disk_space
+            },
+        },
+        '_items': _account_templates
+    } %}
+
+{% endblock %}

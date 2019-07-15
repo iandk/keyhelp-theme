@@ -1,0 +1,140 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+
+    {% for category in _services %}
+        <h2 class="title is-5">{{ category.label }}</h2>
+
+        <div class="card">
+            <div class="card-content">
+
+                {% if category.items is empty %}
+                    <div class="has-text-centered has-text-grey">
+                        - {{ no_items_available }} -
+                    </div>
+                {% else %}
+                    <div class="table-container">
+                        <table class="table is-fullwidth is-striped is-hoverable has-valigned-cells">
+                            <thead>
+                                <th class="is-narrow">
+                                    S
+                                </th>
+                                <th>
+                                    {{ name }}
+                                </th>
+                                <th class="is-narrow">
+                                    {{ options }}
+                                </th>
+                            </thead>
+                            <tbody>
+                                {% for key, item in category.items %}
+                                    <tr>
+                                        <td>
+                                            {% if item.is_running %}
+
+                                                <span class="icon is-medium has-text-success app-tooltip" data-tippy-content="{{ is_running }}">
+                                                    <i class="fas fas fa-play"></i>
+                                                </span>
+
+                                            {% elseif item.is_stopped %}
+
+                                                <span class="icon is-medium app-tooltip" data-tippy-content="{{ is_not_running }}">
+                                                    <i class="fas fa-stop"></i>
+                                                </span>
+
+                                            {% else %}
+
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'status_unknown',
+                                                    '_title': unknown_status
+                                                } %}
+
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ item.label }}
+                                        </td>
+                                        <td class="has-no-wrap">
+                                            {% if item.is_running %}
+
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'start_disabled',
+                                                    '_url': 'javascript:void(0)',
+                                                } %}
+
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': item.is_stop_disabled ? 'stop_disabled' : 'stop',
+                                                    '_url': '?page=admin_services&action=stop&service=' ~ key,
+                                                    '_title': item.is_stop_disabled ? vital_service : ''
+                                                } %}
+
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': item.is_restart_disabled ? 'restart_disabled' : 'restart',
+                                                    '_url': '?page=admin_services&action=start&service=' ~ key,
+                                                    '_title': item.is_restart_disabled ? vital_service : ''
+                                                } %}
+
+                                            {% elseif item.is_stopped %}
+
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'start',
+                                                    '_url': '?page=admin_services&action=start&service=' ~ key
+                                                } %}
+
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'stop_disabled',
+                                                    '_url': 'javascript:void(0)',
+                                                } %}
+
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'restart_disabled',
+                                                    '_url': 'javascript:void(0)'
+                                                } %}
+
+                                            {% else %}
+
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'start_disabled',
+                                                    '_url': 'javascript:void(0)',
+                                                    '_title': no_action_available
+                                                } %}
+
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'stop_disabled',
+                                                    '_url': 'javascript:void(0)',
+                                                    '_title': no_action_available
+                                                } %}
+
+                                                {% include 'includes/icon.twig' with {
+                                                    '_type': 'restart_disabled',
+                                                    '_url': 'javascript:void(0)',
+                                                    '_title': no_action_available
+                                                } %}
+
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="42" class="has-text-grey-light">
+                                        {{ category.items|length }} {{ items_total }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+        {% if not loop.last %}
+            <div class="has-margin-top-large"></div>
+        {% endif %}
+    {% endfor %}
+{% endblock %}

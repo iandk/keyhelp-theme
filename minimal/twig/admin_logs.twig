@@ -1,0 +1,114 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script src="/theme/bulma/assets/js/page_logs.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    <!-- introduction -->
+    <p class="has-margin-bottom-large">
+        {{ help }}
+    </p>
+
+    <form action="?page=admin_logs" method="post">
+        {{ forms.select_wrapped({
+            'label': select_logfile,
+            'name': 'logfile',
+            'options': {
+                'first': '- ' ~ please_select ~ ' -',
+                'groups': [
+                    {
+                        'label': tasks_and_maintenance_logs,
+                        'items': _logfiles_cronjob,
+                    },
+                    {
+                        'label': backup_logs,
+                        'items': _logfiles_backup,
+                    }
+                ]
+            },
+            'selected': _logfiles_selected,
+        }) }}
+    </form>
+
+    <hr class="has-margin-bottom-large">
+
+    {% if not _logfile_content %}
+        <div class="card">
+            <div class="card-content">
+                <div class="has-text-centered has-text-grey">
+                    - {{ no_items_available }} -
+                </div>
+            </div>
+        </div>
+    {% else %}
+
+        <h2 class="title is-5">{{ latest_entries }}</h2>
+
+        <div class="buttons">
+            {{ forms.button({
+                'label': to_total_content,
+                'style': 'primary',
+                'icon': 'fas fa-angle-double-down',
+                'class': 'is-outlined app-scroll-to-total-content-top',
+            }) }}
+        </div>
+
+        <div class="card">
+            <div class="card-content">
+                <pre class="has-padding-none">{{ _logfile_content_latest }}</pre>
+            </div>
+        </div>
+
+        <div class="has-margin-top-large"></div>
+
+        <h2 id="app-total-content-top" class="title is-5">{{ total_content }}</h2>
+
+        <div class="buttons">
+            {{ forms.button({
+                'label': to_bottom,
+                'style': 'primary',
+                'icon': 'fas fa-angle-double-down',
+                'class': 'is-outlined app-scroll-to-total-content-bottom'
+            }) }}
+
+            {{ forms.button({
+                'label': to_top_of_page,
+                'style': 'primary',
+                'icon': 'fas fa-angle-double-up',
+                'class': 'is-outlined app-scroll-to-page-top'
+            }) }}
+        </div>
+
+        <div class="card">
+            <div class="card-content">
+                <div class="table-container">
+                    <pre id="app-total-content" class="has-padding-none">{{ _logfile_content }}</pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="buttons has-margin-top-large">
+            {{ forms.button({
+                'label': to_top,
+                'style': 'primary',
+                'icon': 'fas fa-angle-double-up',
+                'class': 'is-outlined app-scroll-to-total-content-top',
+            }) }}
+
+            {{ forms.button({
+                'label': to_top_of_page,
+                'style': 'primary',
+                'icon': 'fas fa-angle-double-up',
+                'class': 'is-outlined app-scroll-to-page-top'
+            }) }}
+        </div>
+
+    {% endif %}
+
+{% endblock %}

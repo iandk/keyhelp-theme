@@ -1,0 +1,1077 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+<script>
+    var directoryBrowserPurpose = 'ftp';
+    var directoryBrowserUsername = 'alex';
+</script>
+{% endblock %}
+
+
+
+{% set navigation = {
+    'quickstart': {
+        'label': 'Navigation',
+        'items': [
+            { 'label': 'Forms',             'url': '#anchor1' },
+            { 'label': 'Password template', 'url': '#anchor2' },
+            { 'label': 'Browse directory',  'url': '#anchor3' },
+            { 'label': 'Buttons',           'url': '#anchor4' },
+            { 'label': 'CTA Buttons',       'url': '#anchor5' },
+            { 'label': 'Text',              'url': '#anchor6' },
+            { 'label': 'Delete page',       'url': '#anchor7' },
+            { 'label': 'Tabs',              'url': '#anchor8' },
+            { 'label': 'Progress / Meter',  'url': '#anchor9' },
+            { 'label': 'Usage indicator',   'url': '#anchor10' },
+            { 'label': 'Icons',             'url': '#anchor11' },
+            { 'label': 'Modal',             'url': '#anchor12' },
+            { 'label': 'Table / Sorting',   'url': '#anchor13' },
+            { 'label': 'Events',            'url': '#anchor14' },
+        ]
+    }
+} %}
+
+
+
+{% block content %}
+
+<!-- Form related stuff -->
+<a name="anchor1"></a>
+<div class="columns">
+    <div class="column">
+
+        {% include 'includes/card_start.twig' with { '_label': 'Form field options' } %}
+
+            {{ forms.label_wrapped({
+                'label': 'Label for groups',
+                'help': 'Can be used to define a headline of a group (see scheduled tasks for use case).'
+            }) }}
+
+            {{ forms.label_wrapped({
+                'label': 'Fixed value label',
+                'value': 'I am a fixed value'
+            }) }}
+
+            <br><br>
+
+            {{ forms.input_wrapped({
+                'placeholder': 'I just have a placeholder text',
+                'name': 'field-1',
+                'type': 'text',
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': 'Simple input field',
+                'name': 'field-2',
+                'type': 'text',
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': 'Simple input field with placeholder',
+                'placeholder': 'Leave empty if you do not want to change',
+                'name': 'field-3',
+                'type': 'text',
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': 'Simple input field with placeholder, disabled',
+                'placeholder': 'Leave empty if you do not want to change',
+                'name': 'field-4',
+                'type': 'text',
+                'is_disabled': true,
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': 'Simple input field',
+                'help': 'I am a required input field and also have a description, <strong>wh00t</strong>, how cool is that!',
+                'name': 'field-5',
+                'type': 'text',
+                'value': '1023213',
+                'is_required': true,
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': 'Input field with addons',
+                'help': 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.',
+                'name': 'field-6',
+                'type': 'text',
+                'addons': {
+                    'left': {
+                        'type': 'select',
+                        'select': {
+                            'name': 'name',
+                            'options': { 1: 'MB', 2: 'GB', 3: 'TB' },
+                            'selected': 2
+                        }
+                    },
+                }
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': 'Input field with addons',
+                'help': 'Use the right addon to offer a button for password field, to show the plaintext content.',
+                'name': 'field-7',
+                'type': 'password',
+                'is_new_password': true,
+                'addons': {
+                    'right': {
+                        'type': 'action',
+                        'label': show,
+                        'action': 'app-show-password'
+                    }
+                },
+            }) }}
+
+
+            {{ forms.input_wrapped({
+                'label': 'Multiple Addons',
+                'help': 'You can use multiple addons at once.',
+                'name': 'field-8',
+                'type': 'text',
+                'is_required': true,
+                'addons': {
+                    'right': [
+                        {
+                            'label': '.'
+                        },
+                        {
+                            'type': 'select',
+                            'select': {
+                                'name': 'select_test',
+                                'options': { 1: 'dev01.keymachine.de', 2: 'alex-mahr.de', 3: 'test.de' },
+                                'selected': 2
+                            }
+                        }
+                    ]
+                }
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': 'Input field and checkbox combined',
+                'name': 'field-9',
+                'type': 'number',
+                'value': '1',
+                'is_required': true,
+                'checkbox': {
+                    'label': 'Unlimited',
+                    'name': 'Domains-ul',
+                    'value': '-1',
+                    'is_checked': true,
+                }
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': 'Multiple Addons',
+                'help': 'You can use multiple addons at once.',
+                'name': 'field-10',
+                'type': 'text',
+                'is_required': true,
+                'placeholder': 'Bla bla bla bla',
+                'addons': {
+                    'right': {
+                        'type': 'action',
+                        'label': 'Do some stuff',
+                        'action': 'app-do-some-stuff'
+                    },
+                    'left': {
+                        'type': 'select',
+                        'select': {
+                            'name': 'name',
+                            'options': { 1: 'MB', 2: 'GB', 3: 'TB' },
+                            'selected': 2
+                        }
+                    },
+                }
+            }) }}
+
+            {{ forms.checkbox_wrapped({
+                'label': 'Password complexity',
+                'help': 'The password must consist of at least one of the following characters.',
+                'options': [
+                    {
+                        'label': 'Characters [a-zA-Z]',
+                        'name': 'name',
+                        'value': '1',
+                        'is_checked': true,
+                    },
+                    {
+                        'label': 'Lowercase characters [a-z]',
+                        'name': 'name',
+                        'value': '1',
+                        'is_checked': true,
+                    },
+                    {
+                        'label': 'Uppercase characters [A-Z]',
+                        'name': 'name',
+                        'value': '1',
+                        'is_checked': false,
+                    },
+                    {
+                        'label': 'Digits [0-9]',
+                        'name': 'name',
+                        'value': '1',
+                        'is_checked': false,
+                    },
+                    {
+                        'label': 'Special characters',
+                        'name': 'name',
+                        'value': '1',
+                        'is_checked': false,
+                    }
+                ]
+            }) }}
+
+
+            {{ forms.checkbox_wrapped({
+                'label': 'Enable special feature',
+                'help': 'Check this to enable a cool feature.',
+                'options': {
+                    'label': 'Enable',
+                    'name': 'name',
+                    'value': '1',
+                    'is_checked': false
+                }
+            }) }}
+
+
+            {{ forms.radio_wrapped({
+                'label': 'Domain type',
+                'options': [
+                    {
+                        'label': 'Main domain',
+                        'name': 'name',
+                        'value': '1',
+                        'is_checked': true,
+                    },
+                    {
+                        'label': 'Subdomain',
+                        'name': 'name',
+                        'value': '1',
+                    },
+                    {
+                        'label': 'Creation of multiple domains',
+                        'name': 'name',
+                        'value': '1',
+                    },
+                ]
+            }) }}
+
+
+            {{ forms.select_wrapped({
+                'label': 'Simple select field',
+                'name': 'field-14',
+                'options': { 'de': 'German', 'en': 'English', 'pl': 'Polish', 'it': 'Italian' },
+                'selected': 'pl',
+            }) }}
+
+
+            {{ forms.select_wrapped({
+                'label': 'Select field with groups',
+                'name': 'field-14-2',
+                'options': {
+                    'first': '- Please select -',
+                    'groups': [
+                        {
+                            'label': 'EU',
+                            'items': {'de': 'German', 'en': 'English', 'pl': 'Polish', 'it': 'Italian'},
+                        },
+                        {
+                            'label': 'World',
+                            'items': {'ru': 'Russian', 'jp': 'Japanese', 'ca': 'Chinese'},
+                        }
+                    ]
+                },
+                'selected': 'jp',
+            }) }}
+
+            {{ forms.select_wrapped({
+                'label': 'Multiselect field',
+                'help': 'I look weird on mobile :(',
+                'name': 'field-15',
+                'options': { 'de': 'German', 'en': 'English', 'pl': 'Polish', 'it': 'Italian' },
+                'selected': 'pl',
+                'multiple': 3
+            }) }}
+
+            {{ forms.select_wrapped({
+                'label': 'Select with button',
+                'name': 'field-15',
+                'options': { 'de': 'German', 'en': 'English', 'pl': 'Polish', 'it': 'Italian' },
+                'selected': 'pl',
+                'button': {
+                    'label': 'GOOOO',
+                    'class': 'app-choose'
+                }
+            }) }}
+
+            {{ forms.textarea_wrapped({
+                'label': 'Textarea field',
+                'placeholder': 'Insert Text',
+                'name': 'field-16',
+                'is_required': true,
+            }) }}
+
+            {{ forms.textarea_wrapped({
+                'label': 'Textarea field',
+                'help': 'Please write a lot of text in me',
+                'name': 'field-17',
+                'value': 'I am a pre defined text and show 3 rows from the start',
+                'rows': 3,
+            }) }}
+
+            {{ forms.textarea_wrapped({
+                'label': 'Textarea field - auto-size',
+                'help': 'Please write a lot of text in me',
+                'name': 'field-17',
+                'value': 'I am a pre defined text and show 3 rows from the start',
+                'rows': 3,
+                'is_auto_resize': true
+            }) }}
+
+            {{ forms.upload_wrapped({
+                'label': 'File upload',
+                'help': 'I only accept image files.',
+                'name': 'field-18',
+                'button_label': choose_file,
+                'accept': '.jpg, .jpeg, .png, .gif'
+            }) }}
+
+        {% include 'includes/card_end.twig' %}
+
+    </div>
+</div>
+
+<!-- Password form template -->
+<a name="anchor2"></a>
+<div class="columns">
+    <div class="column">
+
+        {% include 'includes/card_start.twig' with { '_label': 'Password form template' } %}
+
+            <form>
+                {% include 'includes/form_password.twig' %}
+            </form>
+
+        {% include 'includes/card_end.twig' %}
+
+    </div>
+</div>
+
+<!-- Browse directory -->
+<a name="anchor3"></a>
+<div class="columns">
+    <div class="column">
+
+        {% include 'includes/card_start.twig' with { '_label': 'Browse diretory' } %}
+
+            <form>
+                {% include 'includes/form_browse_directory.twig' with {
+                    '_append_directory': '/home/users/alex/'
+                } %}
+            </form>
+
+        {% include 'includes/card_end.twig' %}
+
+    </div>
+</div>
+
+<!-- Buttons -->
+<a name="anchor4"></a>
+<div class="columns">
+    <div class="column">
+
+        {% include 'includes/card_start.twig' with { '_label': 'Buttons' } %}
+
+            <div class="buttons">
+                {{ forms.button({
+                    'label': 'Primary',
+                    'style': 'primary',
+                }) }}
+
+                {{ forms.button({
+                    'label': 'Secondary',
+                    'style': 'secondary',
+                }) }}
+
+                {{ forms.button({
+                    'label': 'Grey',
+                    'style': 'grey',
+                }) }}
+
+                {{ forms.button({
+                    'label': 'White ( = Default)',
+                }) }}
+            </div>
+
+            <div class="buttons">
+                {{ forms.button({
+                    'label': 'Primary outlined',
+                    'style': 'primary',
+                    'class': 'is-outlined',
+                }) }}
+
+                {{ forms.button({
+                    'label': 'Secondary outlined',
+                    'style': 'secondary',
+                    'class': 'is-outlined',
+                }) }}
+
+                {{ forms.button({
+                    'label': 'Grey outlined',
+                    'style': 'grey',
+                    'class': 'is-outlined',
+                }) }}
+            </div>
+
+            <div class="buttons">
+                {{ forms.button({
+                    'label': 'Submit Form ID',
+                    'style': 'primary',
+                    'submit_form': 'form-id-example'
+                }) }}
+
+                {{ forms.button({
+                    'label': 'Link With Button Style',
+                    'url': 'https://dev01.keymachine.de'
+                }) }}
+
+                {{ forms.button({
+                    'label': 'Link With Button Style (New Tab)',
+                    'url': 'https://www.google.de',
+                    'is_new_tab': true
+                }) }}
+            </div>
+
+
+            <div class="buttons">
+                {{ forms.button({
+                    'label': 'Button Fullwidth',
+                    'style': 'primary',
+                    'class': 'is-fullwidth',
+                }) }}
+            </div>
+
+            <div class="buttons">
+                {{ forms.button({
+                    'label': 'Button Small',
+                    'class': 'is-small',
+                }) }}
+
+                {{ forms.button({
+                    'label': 'Button Large',
+                    'class': 'is-large',
+                }) }}
+            </div>
+
+            <div class="buttons">
+                {{ forms.button({
+                    'label': 'Button with icon',
+                    'icon': 'fas fa-angle-double-down'
+                }) }}
+            </div>
+
+        {% include 'includes/card_end.twig' %}
+
+    </div>
+</div>
+
+<!-- cta button line -->
+<a name="anchor5"></a>
+<div class="columns">
+    <div class="column">
+
+        {% include 'includes/card_start.twig' with { '_label': 'CTA Buttons' } %}
+
+            {% include 'includes/cta.twig' with { '_back': true } %}
+
+            {% include 'includes/cta.twig' with { '_back': true, '_confirm': { 'label': 'CUSTOM LABEL' } } %}
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': '_theme' }, '_reset': true, '_confirm': true } %}
+
+        {% include 'includes/card_end.twig' %}
+
+    </div>
+</div>
+
+<!-- Text related stuff -->
+<a name="anchor6"></a>
+<div class="columns">
+    <div class="column">
+
+        {% include 'includes/card_start.twig' with { '_label': 'Text related stuff' } %}
+
+            <h1 class="title is-1">Title h1</h1>
+            <h2 class="title is-2">Title h2</h2>
+            <h3 class="title is-3">Title h3</h3>
+            <h4 class="title is-4">Title h4</h4>
+            <h5 class="title is-5">Title h5</h5>
+            <h6 class="title is-6">Title h6</h6>
+
+        {% include 'includes/card_end.twig' %}
+
+    </div>
+</div>
+
+<!-- Delete page -->
+<a name="anchor7"></a>
+<div class="columns">
+    <div class="column">
+
+        {% include 'includes/delete_page.twig' with {
+            '_action': '?page=_theme&action=delete',
+            '_back_page': '_theme',
+            '_config': {
+                'field_1': {
+                    'label': 'Basic Field'
+                },
+                'field_2': {
+                    'label': 'With Help Text',
+                    'help': 'I am a little help text'
+                },
+                'field_3': {
+                    'label': 'Array Field',
+                },
+                'field_4': {
+                    'label': 'Array Field with urls',
+                    'is_url': true,
+                },
+                'field_5': {
+                    'label': 'Boolean Field (true)',
+                },
+                'field_6': {
+                    'label': 'Boolean Field (false)',
+                },
+                'field_7': {
+                    'label': 'Checkbox Field',
+                    'is_checkbox': true,
+                },
+                'field_8': {
+                    'label': 'Checkbox Field with label',
+                    'is_checkbox': true,
+                    'checkbox_label': 'Yes',
+                },
+                'field_9': {
+                    'label': 'Checkbox Field, checked by default',
+                    'is_checkbox': true,
+                    'is_checkbox_checked': true,
+                },
+                'field_10': {
+                    'label': 'Hidden Field',
+                    'is_hidden': true
+                },
+                'field_11': {
+                    'label': 'Show warning if here is content (no content)',
+                    'has_warning_msg': 'Warning, this certificate is currently in use!'
+                },
+                'field_12': {
+                    'label': 'Show warning if here is content (content)',
+                    'has_warning_msg': 'Warning, this certificate is currently in use!'
+                },
+                'field_13': {
+                    'label': 'Empty field (e.g. description field)',
+                },
+                'field_14': {
+                    'label': 'Using nl2br Filter',
+                    'is_nl2br': true
+                }
+            },
+            '_items': [
+                {
+                    'id': 1,
+                    'field_1': 'Random Content A',
+                    'field_2': 'Random Content B',
+                    'field_3': ['Value_1','Value_2','Value_3'],
+                    'field_4': ['alex-mahr.de','example.com','keyhelp.de'],
+                    'field_5': true,
+                    'field_6': false,
+                    'field_7': 'delete_ftp_home[]',
+                    'field_8': 'delete_ftp_home[]',
+                    'field_9': 'delete_ftp_home[]',
+                    'field_10': 'If you see me, something went wrong :/',
+                    'field_11': [],
+                    'field_12': ['alex-mahr.de', 'bla.blub.de'],
+                    'field_13': '',
+                    'field_14': 'nl
+                                 2
+                                 br'
+                }
+            ]
+        } %}
+
+
+
+    </div>
+</div>
+
+<!-- Tabs -->
+<a name="anchor8"></a>
+<div class="columns">
+    <div class="column">
+
+        {% include 'includes/card_start.twig' with { '_label': 'Tabs' } %}
+
+            <div class="tabs is-centered">
+                <ul>
+                    <li class="is-active">
+                        <a href="#tab-account">Account settings</a>
+                    </li>
+                    <li>
+                        <a href="#tab-contact">Contact data</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="tabs-content">
+                <div id="tab-account" class="tabs-panel is-active">
+                    <p>
+                        <h4 class="title is-4">Tab 1</h4>
+                        I am tab 1 and tab 2 is my arch enemy.
+                    </p>
+                </div>
+                <div id="tab-contact" class="tabs-panel">
+                    <p>
+                        <h4 class="title is-4">Tab 2</h4>
+                        I am tab 2 and much cooler than tab 1<br>
+                        Yooooooo!
+                    </p>
+                </div>
+            </div>
+
+        {% include 'includes/card_end.twig' %}
+
+    </div>
+</div>
+
+<!-- Progress bars -->
+<a name="anchor9"></a>
+<div class="columns">
+    <div class="column">
+
+        {% include 'includes/card_start.twig' with { '_label': 'Progress / Meter' } %}
+
+            <h4 class="title is-4">Progress Bar</h4>
+            <progress class="progress is-xsmall" value="34" max="100">50</progress>
+            <progress class="progress is-small" value="64" max="100">50</progress>
+            <progress class="progress" value="50" max="85">50</progress>
+            <progress class="progress is-medium" value="14" max="100">50</progress>
+            <progress class="progress is-large" value="47" max="100">50</progress>
+
+            <h4 class="title is-4">Meter Bar</h4>
+            <meter class="meter is-xsmall" value="34" max="100">50</meter>
+            <meter class="meter is-small" value="64" max="100">50</meter>
+            <meter class="meter" value="50" max="85">50</meter>
+            <meter class="meter is-medium" value="14" max="100">50</meter>
+            <meter class="meter is-large" value="47" max="100">50</meter>
+
+            <h6 class="title is-6">Red <i class="fas fa-angle-double-right"></i> Green</h6>
+            <meter class="meter is-xsmall" value="30" min="0" max="100" low="40" high="74" optimum="75"></meter>
+            <meter class="meter is-xsmall" value="71" min="0" max="100" low="40" high="74" optimum="75"></meter>
+            <meter class="meter is-xsmall" value="90" min="0" max="100" low="40" high="74" optimum="75"></meter>
+
+            <h6 class="title is-6">Green <i class="fas fa-angle-double-right"></i> Red</h6>
+            <meter class="meter is-xsmall" value="30" min="0" max="100" low="70" high="80"></meter>
+            <meter class="meter is-xsmall" value="71" min="0" max="100" low="70" high="80"></meter>
+            <meter class="meter is-xsmall" value="90" min="0" max="100" low="70" high="80"></meter>
+
+            <h4 class="title is-4">Meter Bar With Fallback</h4>
+
+            <meter class="meter" value="27" min="0" max="100" low="80" high="95">
+                <progress class="progress" value="27" max="100">27%</progress>
+            </meter>
+
+            <meter class="meter" value="54" min="0" max="100" low="80" high="95">
+                <progress class="progress" value="54" max="100">54%</progress>
+            </meter>
+
+            <meter class="meter" value="91" min="0" max="100" low="80" high="95">
+                <progress class="progress" value="91" max="100">91%</progress>
+            </meter>
+
+            <meter class="meter" value="66" min="0" max="100" low="80" high="95">
+                <progress class="progress" value="66" max="100">66%</progress>
+            </meter>
+
+            <meter class="meter" value="30" min="0" max="100" low="80" high="95">
+                <progress class="progress" value="30" max="100">30%</progress>
+            </meter>
+
+        {% include 'includes/card_end.twig' %}
+
+    </div>
+</div>
+
+<!-- Usage -->
+<a name="anchor10"></a>
+<div class="columns">
+    <div class="column">
+
+        {% include 'includes/card_start.twig' with { '_label': 'Usage indicator' } %}
+
+            {{ macros.usage_indicator({
+                'label': 'Label',
+                'current': 75,
+                'max': 100,
+                'percent': 75.00
+            }) }}
+
+            {{ macros.usage_indicator({
+                'label': 'Large',
+                'current': 75,
+                'max': 100,
+                'percent': 75.00,
+                'is_large': true
+            }) }}
+
+            {{ macros.usage_indicator({
+                'label': 'Unlimited',
+                'current': 75,
+                'max': 'unlimited',
+                'percent': 0.00
+            }) }}
+
+            {{ macros.usage_indicator({
+                'label': 'Custom low, height, optimum',
+                'percent': 20.00,
+                'low': 40,
+                'high': 74,
+                'optimum': 75
+            }) }}
+
+        {% include 'includes/card_end.twig' %}
+
+    </div>
+</div>
+
+<!-- Icons -->
+<a name="anchor11"></a>
+<div class="columns">
+    <div class="column">
+
+        {% include 'includes/card_start.twig' with { '_label': 'Icons' } %}
+
+            <div class="columns">
+                <div class="column">
+                    <h6 class="title is-6">Option icons (with url)</h6>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'edit',
+                        '_url': '#'
+                    } %}
+                    edit<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'delete',
+                        '_url': '#'
+                    } %}
+                    delete<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'user_edit',
+                        '_url': '#'
+                    } %}
+                    user_edit<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'dns',
+                        '_url': '#'
+                    } %}
+                    dns<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'dns_active',
+                        '_url': '#'
+                    } %}
+                    dns_active<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'login',
+                        '_url': '#'
+                    } %}
+                    login<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'webmail',
+                        '_url': '#'
+                    } %}
+                    webmail<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'database',
+                        '_url': '#'
+                    } %}
+                    database<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'reset',
+                        '_url': '#'
+                    } %}
+                    reset<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'start',
+                        '_url': '#'
+                    } %}
+                    start<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'stop',
+                        '_url': '#'
+                    } %}
+                    stop<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'restart',
+                        '_url': '#'
+                    } %}
+                    restart<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'log',
+                        '_url': '#'
+                    } %}
+                    log<br>
+                </div>
+
+                <div class="column">
+                    <h6 class="title is-6">Option icons (without url)</h6>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'start_disabled',
+                    } %}
+                    start_disabled<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'stop_disabled',
+                    } %}
+                    stop_disabled<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'restart_disabled',
+                    } %}
+                    restart_disabled<br>
+                </div>
+
+                <div class="column">
+                    <h6 class="title is-6">Status icons</h6>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'status_okay',
+                    } %}
+                    status_okay<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'status_error',
+                    } %}
+                    status_error<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'status_processing',
+                    } %}
+                    status_processing<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'status_delete',
+                    } %}
+                    status_delete<br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'status_unknown',
+                    } %}
+                    status_unknown<br>
+                </div>
+            </div>
+
+            <div class="columns has-margin-top-large">
+                <div class="column is-one-third">
+                    <h6 class="title is-6">Option icons (with url + label)</h6>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'edit',
+                        '_label': 'Edit',
+                        '_url': '#'
+                    } %}
+                    <br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'delete',
+                        '_label': 'Delete',
+                        '_url': '#'
+                    } %}
+                    <br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'user_edit',
+                        '_label': 'Edit User',
+                        '_url': '#'
+                    } %}
+                </div>
+
+                <div class="column  is-one-third">
+                    <h6 class="title is-6">No tooltip</h6>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'file_rename',
+                        '_url': '#'
+                    } %}
+                    <br>
+
+                    {% include 'includes/icon.twig' with {
+                        '_type': 'file_permissions',
+                        '_url': '#'
+                    } %}
+                </div>
+            </div>
+
+        {% include 'includes/card_end.twig' %}
+
+    </div>
+</div>
+
+<!-- Modal -->
+<a name="anchor12"></a>
+<div class="columns">
+    <div class="column">
+
+        {% include 'includes/card_start.twig' with { '_label': 'Modal' } %}
+
+            <div class="has-margin-large">
+                {{ forms.button({
+                    'label': 'Open Modal',
+                    'style': 'primary',
+                    'type': 'button',
+                    'modal': 'app-modal-id'
+                }) }}
+            </div>
+
+            <div id="app-modal-id" class="modal">
+                <div class="modal-background"></div>
+                <div class="modal-card">
+                    <header class="modal-card-head">
+                        <p class="modal-card-title">Modal Title</p>
+                        <button class="delete app-modal-close" type="button"></button>
+                    </header>
+                    <div class="modal-card-body">
+                        C O N T E N T<br>
+                        C O N T E N T<br>
+                        C O N T E N T<br>
+                    </div>
+                    <footer class="modal-card-foot">
+                        {{ forms.button({'label': save, 'style': 'primary' }) }}
+                        {{ forms.button({'label': cancel, 'class': 'app-modal-close', 'type': 'button' }) }}
+                    </footer>
+                </div>
+            </div>
+
+        {% include 'includes/card_end.twig' %}
+
+    </div>
+</div>
+
+<!-- Table / Sorting -->
+<a name="anchor13"></a>
+<div class="columns">
+    <div class="column">
+
+        {% include 'includes/card_start.twig' with { '_label': 'Sorting' } %}
+
+            {% set _table_sorting = { '0': { 'column': 'column_name_2', 'order': 'DESC' }} %}
+
+            <table class="table is-fullwidth is-striped is-hoverable">
+                <thead>
+                    <tr>
+                        <th {% include 'includes/table_sorting.twig' with { '_column': 'column_name_1' } %}>
+                            Title 1
+                        </th>
+
+                        <th {% include 'includes/table_sorting.twig' with { '_column': 'column_name_2' } %}>
+                            Title 2 - A longer one
+                        </th>
+
+                        <th {% include 'includes/table_sorting.twig' with { '_column': 'column_name_3' } %}>
+                            Title 3
+                        </th>
+
+                        <th {% include 'includes/table_sorting.twig' with { '_column': 'column_name_4' } %}>
+                            Title 4
+                        </th>
+                        <th {% include 'includes/table_sorting.twig' with { '_column': 'column_name_4' } %}>
+                            Title 5
+                        </th>
+                    </tr>
+                <thead>
+                <tbody>
+                    <tr>
+                        <td>Value</td>
+                        <td>Value</td>
+                        <td>Value</td>
+                        <td>Value</td>
+                        <td>Value</td>
+                    </tr>
+                    <tr>
+                        <td>Value</td>
+                        <td>Value</td>
+                        <td>Value</td>
+                        <td>Value</td>
+                        <td>Value</td>
+                    </tr>
+                    <tr>
+                        <td>Value</td>
+                        <td>Value</td>
+                        <td>Value</td>
+                        <td>Value</td>
+                        <td>Value</td>
+                    </tr>
+                    <tr>
+                        <td>Value</td>
+                        <td>Value</td>
+                        <td>Value</td>
+                        <td>Value</td>
+                        <td>Value</td>
+                    </tr>
+                </tbody>
+            </table>
+
+        {% include 'includes/card_end.twig' %}
+
+    </div>
+</div>
+
+<!-- Events -->
+<a name="anchor14"></a>
+<div class="columns">
+    <div class="column">
+
+        {% include 'includes/card_start.twig' with { '_label': 'Events' } %}
+
+        {% set _app = _app|merge({
+                'events': [
+                    {
+                        'type': 'error',
+                        'message': 'I am an <b>error</b> message. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.'
+                    },
+                    {
+                        'type': 'warning',
+                        'message': 'I am a <b>warning</b> message. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.'
+                    },
+                    {
+                        'type': 'success',
+                        'message': 'I am a <b>success</b> message. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.'
+                    },
+                    {
+                        'type': 'info',
+                        'message': 'I am a <b>info</b> message. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.'
+                    }
+                ]
+            })
+        %}
+
+        {% include 'includes/events.twig' %}
+
+        {% include 'includes/card_end.twig' %}
+
+    </div>
+</div>
+
+{% endblock %}

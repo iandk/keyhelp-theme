@@ -1,0 +1,81 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script src="/theme/bulma/assets/js/page_backup.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+	{% include 'includes/card_start.twig' %}
+
+        <form action="?page=backup_create_backup" method="post" autocomplete="off">
+            <input type="hidden" name="submit" value="1">
+
+            {{ forms.label_wrapped({
+                'label': backup_scope,
+                'help': _is_user_backup ? backup_scope_user : backup_scope_admin,
+            }) }}
+
+            {{ forms.radio_wrapped({
+                'label': repository,
+                'help': repository_help,
+                'is_required': true,
+                'options': [
+                    {
+                        'label': local_repository,
+                        'help': not _has_local_repository ? local_not_available,
+                        'name': 'repository',
+                        'value': 'local',
+                        'is_disabled': not _has_local_repository,
+                    },
+                    {
+                        'label': remote_repository,
+                        'help': not _has_remote_repository ? remote_not_available,
+                        'name': 'repository',
+                        'value': 'remote',
+                        'is_disabled': not _has_remote_repository
+                    },
+                ]
+            }) }}
+
+            {{ forms.input_wrapped({
+                'label': notification,
+                'help': notification_help,
+                'name': 'notification',
+                'type': 'email',
+            }) }}
+
+            {{ forms.checkbox_wrapped({
+                'help': notification_on_success,
+                'options': {
+                    'label': yes,
+                    'name': 'notification_on_success',
+                    'value': '1',
+                    'is_checked': true
+                }
+            }) }}
+
+            {{ forms.checkbox_wrapped({
+                'label': enable_password,
+                'help': enable_password_help,
+                'options': {
+                    'label': yes,
+                    'name': 'is_enable_password',
+                    'value': '1',
+                }
+            }) }}
+
+            <div id="app-password-container" style="display: none">
+                {% include 'includes/form_password.twig' %}
+            </div>
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': 'backup_index' }, '_confirm': true } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}

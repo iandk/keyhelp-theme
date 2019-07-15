@@ -1,0 +1,25 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    {% include 'includes/card_start.twig' %}
+
+        <form action="?page={{ _app.page }}&action={{ _action }}" method="post" autocomplete="off">
+            <input type="hidden" name="submit" value="1">
+            <input type="hidden" name="id" value="{{ _id }}">
+
+            {{ forms.input_wrapped({
+                'label': domain_name,
+                'name': 'domain_name',
+                'type': 'text',
+                'value': _domain_name
+            }) }}
+
+            {% include 'includes/cta.twig' with { '_back': { 'target': _app.page }, '_confirm': true } %}
+        </form>
+
+    {% include 'includes/card_end.twig' %}
+
+{% endblock %}

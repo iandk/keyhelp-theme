@@ -1,0 +1,21 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block content %}
+
+    {% include 'includes/delete_page.twig' with {
+        '_action': '?page=admin_accounts_admin&action=delete',
+        '_back_page': 'admin_accounts_admin',
+        '_config': {
+            'username': {
+                'label': username
+            },
+            'is_main_admin': {
+                'label': main_administrator
+            },
+        },
+        '_items': _admin_accounts
+    } %}
+
+{% endblock %}

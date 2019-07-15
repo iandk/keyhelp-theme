@@ -1,0 +1,25 @@
+{% extends 'base/intern.twig' %}
+
+
+
+{% block page_scripts %}
+    <script src="/theme/bulma/assets/js/page_apache_server_status.js?{{ _app.cache_busting }}"></script>
+{% endblock %}
+
+
+
+{% block content %}
+
+    {{ forms.select_wrapped({
+        'label': auto_refresh,
+        'name': 'auto_refresh',
+        'options': _refresh_options,
+    }) }}
+
+    <hr class="has-margin-bottom-large">
+
+    <div id="app-apache-server-status">
+        {% include 'includes/apache_server_status.twig' with { '_status': _apache_server_status } %}
+    </div>
+
+{% endblock %}
