@@ -8,7 +8,7 @@ cd /home/keyhelp/www/keyhelp/theme
 wget https://github.com/iandk/keyhelp-theme/raw/master/minimal.zip
 unzip minimal.zip
 rm -r minimal.zip __MACOSX
-rm /home/keyhelp/www/keyhelp/cache/*
+rm -r /home/keyhelp/www/keyhelp/cache/*
 ```
 
 
