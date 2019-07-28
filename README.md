@@ -1,6 +1,7 @@
 # keyhelp-theme
-A minimalistic keyhelp theme
 
+
+# !!!CURRENTLY BROKEN!!!
 
 ## Install
 ```
